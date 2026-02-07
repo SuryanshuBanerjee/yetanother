@@ -8,7 +8,8 @@ import { RoleProvider } from "@/components/RoleSelector";
 import AppFlow, { useUserData } from "@/components/AppFlow";
 import TrendTicker from "@/components/TrendTicker";
 import TrendingStocks from "@/components/TrendingStocks";
-import { Search, Activity } from "lucide-react";
+import { Activity } from "lucide-react";
+import SearchWithSuggestions from "@/components/SearchWithSuggestions";
 import type { DecayAnalysis } from "@/lib/decayEngine";
 
 // Role mapping from quiz IDs to API role keys
@@ -32,9 +33,8 @@ function Dashboard() {
   const userRole = ROLE_MAP[quizRole] || "general-user";
   const userName = (userData?.name as string) || "User";
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!query) return;
+  const analyzeKeyword = async (keyword: string) => {
+    if (!keyword) return;
 
     setData(null);
     setValidationError(null);
@@ -159,61 +159,18 @@ function Dashboard() {
           </div>
         </header>
 
-        {/* Search Bar */}
+        {/* Search Bar with Suggestions */}
         <div className="px-8 py-6">
-          <form onSubmit={handleSearch} className="relative max-w-2xl mx-auto">
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => {
-                setQuery(e.target.value);
-                if (validationError) setValidationError(null);
-              }}
-              placeholder="Search any trend, hashtag, or topic..."
-              className="w-full py-4 px-6 pr-32 rounded-xl text-lg text-white outline-none transition-all placeholder:text-white/30"
-              style={{
-                background: "rgba(255,255,255,0.03)",
-                border: validationError
-                  ? "1px solid rgba(255, 42, 109, 0.5)"
-                  : "1px solid rgba(255,255,255,0.1)",
-              }}
-              onFocus={(e) => {
-                if (!validationError) {
-                  e.target.style.borderColor = "rgba(0, 240, 255, 0.4)";
-                  e.target.style.boxShadow = "0 0 20px rgba(0, 240, 255, 0.1)";
-                }
-              }}
-              onBlur={(e) => {
-                if (!validationError) {
-                  e.target.style.borderColor = "rgba(255,255,255,0.1)";
-                  e.target.style.boxShadow = "none";
-                }
-              }}
-            />
-            <button
-              type="submit"
-              disabled={loading}
-              className="absolute right-2 top-2 bottom-2 px-6 rounded-lg font-bold flex items-center gap-2 transition-all duration-300 disabled:opacity-50"
-              style={{
-                background: "linear-gradient(135deg, #00f0ff, #bd00ff)",
-                boxShadow: "0 0 20px rgba(0, 240, 255, 0.2)",
-              }}
-            >
-              <Search className="w-4 h-4 text-black" />
-              <span className="text-black">Analyze</span>
-            </button>
-          </form>
-
-          {/* Validation Error */}
-          {validationError && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="max-w-2xl mx-auto mt-3 px-4 py-3 rounded-lg border border-decay-red/30 bg-decay-red/10 text-decay-red text-sm font-mono"
-            >
-              {validationError}
-            </motion.div>
-          )}
+          <SearchWithSuggestions
+            value={query}
+            onChange={(value) => {
+              setQuery(value);
+              if (validationError) setValidationError(null);
+            }}
+            onSearch={analyzeKeyword}
+            loading={loading}
+            validationError={validationError}
+          />
         </div>
 
         {/* Ticker Tape */}

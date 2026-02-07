@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { TrendingUp, TrendingDown, AlertTriangle, Activity, BarChart3 } from "lucide-react";
+import { TrendingUp, TrendingDown, AlertTriangle, Activity, BarChart3, Loader2 } from "lucide-react";
 
 interface TrendStock {
     id: string;
@@ -14,17 +14,6 @@ interface TrendStock {
     risk: "low" | "medium" | "high" | "critical";
     category: string;
 }
-
-const fallbackStocks: TrendStock[] = [
-    { id: "1", name: "Quiet Luxury", symbol: "#QLUX", score: 847, change: 12.4, volume: "2.4M", risk: "low", category: "Fashion" },
-    { id: "2", name: "AI Art", symbol: "#AIART", score: 623, change: -3.2, volume: "5.1M", risk: "high", category: "Tech" },
-    { id: "3", name: "Mob Wife", symbol: "#MOBWF", score: 912, change: 24.1, volume: "1.8M", risk: "medium", category: "Fashion" },
-    { id: "4", name: "Dopamine Dressing", symbol: "#DPDRSS", score: 756, change: 18.9, volume: "890K", risk: "low", category: "Fashion" },
-    { id: "5", name: "Deinfluencing", symbol: "#DEINFL", score: 534, change: -8.2, volume: "3.2M", risk: "high", category: "Lifestyle" },
-    { id: "6", name: "Coquette", symbol: "#CQTE", score: 689, change: 15.3, volume: "1.1M", risk: "low", category: "Fashion" },
-    { id: "7", name: "Roman Empire", symbol: "#ROMEMP", score: 421, change: -12.5, volume: "780K", risk: "high", category: "Culture" },
-    { id: "8", name: "Girl Dinner", symbol: "#GRLDNR", score: 567, change: 5.7, volume: "2.9M", risk: "medium", category: "Food" },
-];
 
 const riskColors: Record<string, string> = {
     low: "text-green-400 bg-green-400/10",
@@ -38,11 +27,12 @@ interface TrendingStocksProps {
 }
 
 export default function TrendingStocks({ onStockClick }: TrendingStocksProps) {
-    const [stocks, setStocks] = useState<TrendStock[]>(fallbackStocks);
+    const [stocks, setStocks] = useState<TrendStock[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [hasLiveData, setHasLiveData] = useState(false);
 
     useEffect(() => {
-        // Try fetching from database first, then trending
+        // Fetch from database (now seeded from CSV) and Google Trends
         Promise.all([
             fetch("/api/trends/database").then(r => r.json()).catch(() => ({ stocks: [] })),
             fetch("/api/trends/trending").then(r => r.json()).catch(() => ({ stocks: [] })),
@@ -50,7 +40,7 @@ export default function TrendingStocks({ onStockClick }: TrendingStocksProps) {
             const dbStocks = dbData.stocks || [];
             const googleStocks = trendingData.stocks || [];
 
-            // Merge: DB stocks first (user's searched trends), then Google trending
+            // Merge: DB stocks first (CSV-seeded + user searches), then Google trending
             const merged = [
                 ...dbStocks,
                 ...googleStocks.filter(
@@ -58,22 +48,48 @@ export default function TrendingStocks({ onStockClick }: TrendingStocksProps) {
                 ),
             ].slice(0, 12);
 
-            if (merged.length > 0) {
-                setStocks(merged);
-                setHasLiveData(true);
-            }
+            setStocks(merged);
+            setHasLiveData(merged.length > 0);
+            setIsLoading(false);
         });
     }, []);
+
+    // Loading state
+    if (isLoading) {
+        return (
+            <div className="w-full">
+                <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                        <BarChart3 className="w-5 h-5 text-neon-blue" />
+                        Loading Trends...
+                    </h2>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {[...Array(8)].map((_, i) => (
+                        <div key={i} className="hud-card p-4 animate-pulse">
+                            <div className="h-4 bg-white/10 rounded w-1/3 mb-2"></div>
+                            <div className="h-6 bg-white/10 rounded w-2/3 mb-3"></div>
+                            <div className="h-8 bg-white/10 rounded w-1/2 mb-3"></div>
+                            <div className="flex justify-between">
+                                <div className="h-4 bg-white/10 rounded w-1/4"></div>
+                                <div className="h-4 bg-white/10 rounded w-1/4"></div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="w-full">
             <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold text-white flex items-center gap-2">
                     <BarChart3 className="w-5 h-5 text-neon-blue" />
-                    {hasLiveData ? "Your Trends & Trending Now" : "Trending Now"}
+                    {hasLiveData ? "Trending Now" : "No Trends Available"}
                 </h2>
                 <span className="text-xs font-mono text-white/40">
-                    {hasLiveData ? "Live data" : "Click any trend to analyze"}
+                    {hasLiveData ? `${stocks.length} trends • Click to analyze` : "Search for a trend to get started"}
                 </span>
             </div>
 

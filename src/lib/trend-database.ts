@@ -3,6 +3,7 @@
 
 import { promises as fs } from "fs";
 import path from "path";
+import { parseAllCSVFiles, type ParsedTrend } from "./csv-parser";
 
 export interface StoredTrend {
     keyword: string;
@@ -21,6 +22,7 @@ const DB_PATH = path.join(process.cwd(), "trend-database.json");
 
 // In-memory cache
 let trendCache: StoredTrend[] | null = null;
+let hasSeeded = false;
 
 function generateSymbol(keyword: string): string {
     const words = keyword.replace(/[^a-zA-Z\s]/g, "").trim().split(/\s+/);
@@ -37,15 +39,72 @@ function determineRisk(score: number, change: number): StoredTrend["risk"] {
     return "low";
 }
 
+/**
+ * Seed database from CSV files if empty
+ */
+async function seedFromCSV(): Promise<StoredTrend[]> {
+    if (hasSeeded) return [];
+    hasSeeded = true;
+
+    console.log("[trend-database] Seeding from CSV files...");
+    const csvTrends = await parseAllCSVFiles();
+
+    if (csvTrends.length === 0) {
+        console.log("[trend-database] No CSV trends found");
+        return [];
+    }
+
+    // Convert ParsedTrend to StoredTrend (top 50 by volume)
+    const seededTrends: StoredTrend[] = csvTrends.slice(0, 50).map((t: ParsedTrend, i: number) => {
+        // Calculate synthetic score based on volume (higher volume = higher score)
+        const volumeRank = Math.max(0, 100 - (i * 2));
+        const score = Math.min(100, Math.max(20, volumeRank + Math.random() * 20 - 10));
+
+        // Synthetic change based on position (top trends tend to be rising)
+        const change = i < 10 ? Math.round((15 + Math.random() * 20) * 10) / 10
+            : i < 25 ? Math.round((Math.random() * 20 - 5) * 10) / 10
+                : Math.round((Math.random() * 10 - 10) * 10) / 10;
+
+        return {
+            keyword: t.keyword,
+            symbol: generateSymbol(t.keyword),
+            score: Math.round(score),
+            change,
+            volume: t.volume,
+            risk: determineRisk(score, change),
+            category: t.category,
+            phase: score > 70 ? "Growth" : score > 50 ? "Peak" : score > 30 ? "Saturation" : "Decay",
+            lastSearched: new Date().toISOString(),
+            searchCount: 0,
+        };
+    });
+
+    console.log(`[trend-database] Seeded ${seededTrends.length} trends from CSV`);
+    return seededTrends;
+}
+
 async function loadDB(): Promise<StoredTrend[]> {
     if (trendCache) return trendCache;
 
     try {
         const data = await fs.readFile(DB_PATH, "utf-8");
         trendCache = JSON.parse(data);
+
+        // If database is empty, seed from CSV
+        if (!trendCache || trendCache.length === 0) {
+            trendCache = await seedFromCSV();
+            if (trendCache.length > 0) {
+                await saveDB(trendCache);
+            }
+        }
+
         return trendCache!;
     } catch {
-        trendCache = [];
+        // No database file - seed from CSV
+        trendCache = await seedFromCSV();
+        if (trendCache.length > 0) {
+            await saveDB(trendCache);
+        }
         return trendCache;
     }
 }

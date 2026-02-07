@@ -3,13 +3,12 @@ import googleTrends from "google-trends-api";
 import { getTickerData, getTrends } from "@/lib/trend-database";
 
 // Fetches trending data from multiple sources:
-// 1. Our database (previously searched trends)
+// 1. Our database (seeded from CSV files on startup)
 // 2. Google Trends autocomplete/related for popular seed terms
-// 3. Hardcoded trending defaults as final fallback
 
 export async function GET() {
     try {
-        // Fetch database trends and Google trends in parallel
+        // Fetch database trends (auto-seeded from CSV) and Google trends in parallel
         const [dbTicker, dbStocks, googleTrending] = await Promise.all([
             getTickerData(),
             getTrends(),
@@ -24,17 +23,7 @@ export async function GET() {
             ),
         ];
 
-        // If we don't have enough, add defaults
-        if (ticker.length < 5) {
-            const defaults = getDefaultTicker();
-            for (const d of defaults) {
-                if (!ticker.some((t) => t.name.toLowerCase() === d.name.toLowerCase())) {
-                    ticker.push(d);
-                }
-            }
-        }
-
-        // Build stocks from database + Google
+        // Build stocks from database (CSV-seeded)
         const stocks = dbStocks.slice(0, 12).map((t, i) => ({
             id: String(i),
             name: t.keyword,
@@ -50,14 +39,15 @@ export async function GET() {
             ticker: ticker.slice(0, 20),
             stocks,
             lastUpdated: new Date().toISOString(),
+            _seededFromCSV: dbStocks.length > 0,
         });
     } catch (error) {
         console.error("Trending fetch error:", error);
         return NextResponse.json({
-            ticker: getDefaultTicker(),
+            ticker: [],
             stocks: [],
             lastUpdated: new Date().toISOString(),
-            _fallback: true,
+            _error: true,
         });
     }
 }
@@ -102,17 +92,3 @@ async function fetchTrendingFromGoogle(): Promise<
     return allResults;
 }
 
-function getDefaultTicker() {
-    return [
-        { name: "AI Trends", symbol: "#AI", change: 15.2, isUp: true },
-        { name: "Sustainability", symbol: "#SUST", change: 8.4, isUp: true },
-        { name: "Remote Work", symbol: "#RW", change: -2.1, isUp: false },
-        { name: "Crypto", symbol: "#CRYP", change: 22.7, isUp: true },
-        { name: "Mental Health", symbol: "#MH", change: 5.3, isUp: true },
-        { name: "Clean Girl Aesthetic", symbol: "#CGA", change: 11.3, isUp: true },
-        { name: "Cottagecore", symbol: "#CTGCR", change: -3.7, isUp: false },
-        { name: "Quiet Luxury", symbol: "#QLUX", change: 4.2, isUp: true },
-        { name: "Mob Wife", symbol: "#MOBWF", change: 18.9, isUp: true },
-        { name: "De-influencing", symbol: "#DEINFL", change: -5.4, isUp: false },
-    ];
-}

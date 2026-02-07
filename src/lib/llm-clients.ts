@@ -62,6 +62,7 @@ export async function callGroq(
 // Tries multiple free models with retry on rate-limit
 // ============================================================
 const OPENROUTER_MODELS = [
+    "arcee-ai/trinity-mini:free",
     "meta-llama/llama-3.3-70b-instruct:free",
     "google/gemini-2.0-flash-exp:free",
     "deepseek/deepseek-r1:free",
@@ -149,7 +150,7 @@ export async function callFeatherless(
     if (!apiKey) throw new Error("FEATHERLESS_API_KEY not set");
 
     const body: Record<string, unknown> = {
-        model: "meta-llama/Llama-3.3-70B-Instruct",
+        model: "Qwen/Qwen2.5-7B-Instruct",
         messages,
         temperature: options.temperature ?? 0.7,
         max_tokens: options.maxTokens ?? 3000,
