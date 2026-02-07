@@ -90,7 +90,7 @@ export default function OnboardingQuiz({ onComplete, onBack }: OnboardingQuizPro
     const step = steps[currentStep];
     const progress = ((currentStep + 1) / steps.length) * 100;
 
-    // Color evolution based on progress
+    // Color evolution based on progress (Restored Vibe)
     const gradientColors = useMemo(() => {
         const hueShift = (currentStep / (steps.length - 1)) * 60; // 0 to 60 degree shift
         return {

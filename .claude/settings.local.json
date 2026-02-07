@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx next build)",
+      "Bash(curl:*)",
+      "Bash(python -m json.tool:*)",
+      "Bash(python -c:*)",
+      "Bash(node:*)"
+    ]
+  }
+}

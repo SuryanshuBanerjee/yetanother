@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { TrendingUp, TrendingDown, AlertTriangle, Activity, BarChart3 } from "lucide-react";
 
@@ -10,11 +11,11 @@ interface TrendStock {
     score: number;
     change: number;
     volume: string;
-    risk: "low" | "medium" | "high";
+    risk: "low" | "medium" | "high" | "critical";
     category: string;
 }
 
-const mockStocks: TrendStock[] = [
+const fallbackStocks: TrendStock[] = [
     { id: "1", name: "Quiet Luxury", symbol: "#QLUX", score: 847, change: 12.4, volume: "2.4M", risk: "low", category: "Fashion" },
     { id: "2", name: "AI Art", symbol: "#AIART", score: 623, change: -3.2, volume: "5.1M", risk: "high", category: "Tech" },
     { id: "3", name: "Mob Wife", symbol: "#MOBWF", score: 912, change: 24.1, volume: "1.8M", risk: "medium", category: "Fashion" },
@@ -25,30 +26,65 @@ const mockStocks: TrendStock[] = [
     { id: "8", name: "Girl Dinner", symbol: "#GRLDNR", score: 567, change: 5.7, volume: "2.9M", risk: "medium", category: "Food" },
 ];
 
-const riskColors = {
+const riskColors: Record<string, string> = {
     low: "text-green-400 bg-green-400/10",
     medium: "text-yellow-400 bg-yellow-400/10",
     high: "text-red-400 bg-red-400/10",
+    critical: "text-red-500 bg-red-500/10",
 };
 
-export default function TrendingStocks() {
+interface TrendingStocksProps {
+    onStockClick?: (keyword: string) => void;
+}
+
+export default function TrendingStocks({ onStockClick }: TrendingStocksProps) {
+    const [stocks, setStocks] = useState<TrendStock[]>(fallbackStocks);
+    const [hasLiveData, setHasLiveData] = useState(false);
+
+    useEffect(() => {
+        // Try fetching from database first, then trending
+        Promise.all([
+            fetch("/api/trends/database").then(r => r.json()).catch(() => ({ stocks: [] })),
+            fetch("/api/trends/trending").then(r => r.json()).catch(() => ({ stocks: [] })),
+        ]).then(([dbData, trendingData]) => {
+            const dbStocks = dbData.stocks || [];
+            const googleStocks = trendingData.stocks || [];
+
+            // Merge: DB stocks first (user's searched trends), then Google trending
+            const merged = [
+                ...dbStocks,
+                ...googleStocks.filter(
+                    (g: TrendStock) => !dbStocks.some((d: TrendStock) => d.name.toLowerCase() === g.name.toLowerCase())
+                ),
+            ].slice(0, 12);
+
+            if (merged.length > 0) {
+                setStocks(merged);
+                setHasLiveData(true);
+            }
+        });
+    }, []);
+
     return (
         <div className="w-full">
             <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold text-white flex items-center gap-2">
                     <BarChart3 className="w-5 h-5 text-neon-blue" />
-                    Trending Now
+                    {hasLiveData ? "Your Trends & Trending Now" : "Trending Now"}
                 </h2>
-                <span className="text-xs font-mono text-white/40">Updated 2m ago</span>
+                <span className="text-xs font-mono text-white/40">
+                    {hasLiveData ? "Live data" : "Click any trend to analyze"}
+                </span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {mockStocks.map((stock, i) => (
+                {stocks.map((stock, i) => (
                     <motion.div
                         key={stock.id}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.05 }}
+                        onClick={() => onStockClick?.(stock.name)}
                         className="hud-card p-4 hover:border-white/20 transition-all cursor-pointer group"
                     >
                         {/* Header */}
@@ -86,7 +122,7 @@ export default function TrendingStocks() {
                                 <Activity className="w-3 h-3" />
                                 <span>{stock.volume}</span>
                             </div>
-                            <div className={`flex items-center gap-1 px-2 py-0.5 rounded ${riskColors[stock.risk]}`}>
+                            <div className={`flex items-center gap-1 px-2 py-0.5 rounded ${riskColors[stock.risk] || riskColors.medium}`}>
                                 <AlertTriangle className="w-3 h-3" />
                                 <span className="capitalize">{stock.risk}</span>
                             </div>

@@ -7,6 +7,7 @@ declare module 'google-trends-api' {
         hl?: string;
         timezone?: number;
         category?: number;
+        resolution?: string;
     }
 
     interface DailyTrendsOptions {

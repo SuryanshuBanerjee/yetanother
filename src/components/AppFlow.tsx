@@ -1,11 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, createContext, useContext } from "react";
 import { AnimatePresence } from "framer-motion";
 import LandingPage from "./LandingPage";
 import OnboardingQuiz from "./OnboardingQuiz";
 
 type AppState = "landing" | "quiz" | "dashboard";
+
+// Context to share user data (role, name, etc.) with the dashboard
+interface UserDataContextType {
+    userData: Record<string, string | string[]> | null;
+}
+
+const UserDataContext = createContext<UserDataContextType>({ userData: null });
+
+export function useUserData() {
+    return useContext(UserDataContext);
+}
 
 interface AppFlowProps {
     children: React.ReactNode;
@@ -41,7 +52,11 @@ export default function AppFlow({ children }: AppFlowProps) {
             </AnimatePresence>
 
             {/* Dashboard - rendered when appState is "dashboard" */}
-            {appState === "dashboard" && children}
+            {appState === "dashboard" && (
+                <UserDataContext.Provider value={{ userData }}>
+                    {children}
+                </UserDataContext.Provider>
+            )}
         </>
     );
 }

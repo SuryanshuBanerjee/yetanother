@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { TrendingUp, TrendingDown } from "lucide-react";
 
@@ -10,7 +11,7 @@ interface TrendItem {
     isUp: boolean;
 }
 
-const mockTrends: TrendItem[] = [
+const fallbackTrends: TrendItem[] = [
     { name: "Quiet Luxury", symbol: "#QLUX", change: 12.4, isUp: true },
     { name: "AI Art", symbol: "#AIART", change: -3.2, isUp: false },
     { name: "Clean Girl", symbol: "#CLNGRL", change: 8.7, isUp: true },
@@ -24,8 +25,24 @@ const mockTrends: TrendItem[] = [
 ];
 
 export default function TrendTicker() {
-    // Duplicate for seamless loop
-    const items = [...mockTrends, ...mockTrends];
+    const [trends, setTrends] = useState<TrendItem[]>(fallbackTrends);
+
+    useEffect(() => {
+        // Fetch real trending data
+        fetch("/api/trends/trending")
+            .then((res) => res.json())
+            .then((data) => {
+                if (data.ticker && data.ticker.length > 0) {
+                    setTrends(data.ticker);
+                }
+            })
+            .catch(() => {
+                // Keep fallback trends
+            });
+    }, []);
+
+    // Double for infinite scroll effect
+    const items = [...trends, ...trends];
 
     return (
         <div className="w-full overflow-hidden border-y border-white/10 bg-black/40 backdrop-blur-sm">

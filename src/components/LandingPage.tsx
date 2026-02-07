@@ -65,16 +65,7 @@ export default function LandingPage({ onStart }: LandingPageProps) {
                 initial={{ y: 30, opacity: 0, scale: 0.98 }}
                 animate={{ y: 0, opacity: 1, scale: 1 }}
                 transition={{ delay: 0.2, duration: 0.7, ease: "easeOut" }}
-                className="relative w-[92vw] h-[88vh] rounded-2xl overflow-hidden"
-                style={{
-                    background: "linear-gradient(135deg, rgba(0, 0, 0, 0.7), rgba(15, 15, 25, 0.5))",
-                    backdropFilter: "blur(20px)",
-                    border: "1px solid transparent",
-                    backgroundImage: `linear-gradient(135deg, rgba(0, 0, 0, 0.7), rgba(15, 15, 25, 0.5)), 
-                            linear-gradient(135deg, rgba(0, 240, 255, 0.4), rgba(189, 0, 255, 0.4))`,
-                    backgroundOrigin: "border-box",
-                    backgroundClip: "padding-box, border-box",
-                }}
+                className="relative w-[92vw] h-[88vh] rounded-2xl overflow-hidden hud-container"
             >
                 {/* Corner Accents */}
                 <div className="absolute top-0 left-0 w-20 h-20 border-l-2 border-t-2 border-cyan-400/50 rounded-tl-2xl" />
