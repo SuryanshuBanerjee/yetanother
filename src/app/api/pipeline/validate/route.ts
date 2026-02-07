@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { callGroq, ROLE_PROMPTS } from "@/lib/llm-clients";
+import { getTrends } from "@/lib/trend-database";
 
 export async function POST(req: NextRequest) {
     try {
@@ -7,6 +8,22 @@ export async function POST(req: NextRequest) {
 
         if (!keyword) {
             return NextResponse.json({ error: "Keyword required" }, { status: 400 });
+        }
+
+        // CHECK LOCAL DATABASE FIRST (Fast Path)
+        const localTrends = await getTrends();
+        const existingTrend = localTrends.find(t => t.keyword.toLowerCase() === keyword.toLowerCase());
+
+        if (existingTrend) {
+            return NextResponse.json({
+                isValid: true,
+                confidence: 95,
+                category: existingTrend.category,
+                reason: "Known trend from database",
+                trendName: existingTrend.keyword,
+                suggestedKeywords: [existingTrend.keyword],
+                _meta: { source: "local-cache" }
+            });
         }
 
         const roleContext = ROLE_PROMPTS[userRole] || ROLE_PROMPTS["general-user"];

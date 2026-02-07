@@ -2,15 +2,15 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import ThinkingUI from "@/components/ThinkingUI";
-import TrendReport from "@/components/TrendReport";
+import TrendDashboard from "@/components/TrendDashboard";
 import { RoleProvider } from "@/components/RoleSelector";
 import AppFlow, { useUserData } from "@/components/AppFlow";
 import TrendTicker from "@/components/TrendTicker";
 import TrendingStocks from "@/components/TrendingStocks";
+import AnalysisProgress, { AnalysisStep } from "@/components/AnalysisProgress";
 import { Activity } from "lucide-react";
 import SearchWithSuggestions from "@/components/SearchWithSuggestions";
-import type { DecayAnalysis } from "@/lib/decayEngine";
+
 
 // Role mapping from quiz IDs to API role keys
 const ROLE_MAP: Record<string, string> = {
@@ -22,76 +22,96 @@ const ROLE_MAP: Record<string, string> = {
 
 function Dashboard() {
   const [loading, setLoading] = useState(false);
-  const [showThinking, setShowThinking] = useState(false);
   const [query, setQuery] = useState("");
-  const [data, setData] = useState<(DecayAnalysis & Record<string, unknown>) | null>(null);
+  const [searchingKeyword, setSearchingKeyword] = useState("");
+  const [data, setData] = useState<Record<string, unknown> | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
   const { userData } = useUserData();
 
-  // Get the user role from onboarding data
+  // Progress tracking
+  const [currentStep, setCurrentStep] = useState<AnalysisStep | null>(null);
+  const [completedSteps, setCompletedSteps] = useState<AnalysisStep[]>([]);
+
   const quizRole = (userData?.role as string) || "analyst";
   const userRole = ROLE_MAP[quizRole] || "general-user";
   const userName = (userData?.name as string) || "User";
 
+  const simulateProgress = () => {
+    // Simulate pipeline progress (the actual API runs these in sequence)
+    const steps: AnalysisStep[] = ["validate", "metrics", "inferences", "verdict"];
+    let stepIndex = 0;
+
+    setCurrentStep(steps[0]);
+    setCompletedSteps([]);
+
+    const interval = setInterval(() => {
+      if (stepIndex < steps.length - 1) {
+        setCompletedSteps((prev) => [...prev, steps[stepIndex]]);
+        stepIndex++;
+        setCurrentStep(steps[stepIndex]);
+      }
+    }, 2500); // ~2.5s per step
+
+    return () => clearInterval(interval);
+  };
+
   const analyzeKeyword = async (keyword: string) => {
     if (!keyword) return;
 
+    // Reset state
     setData(null);
     setValidationError(null);
-    setShowThinking(true);
     setLoading(true);
+    setSearchingKeyword(keyword);
+    setQuery(keyword);
+
+    // Start progress simulation
+    const cleanup = simulateProgress();
 
     try {
       const res = await fetch("/api/trends/decay", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ keyword: query, userRole }),
+        body: JSON.stringify({ keyword, userRole }),
       });
 
       const result = await res.json();
 
+      // Complete all steps
+      setCompletedSteps(["validate", "metrics", "inferences", "verdict"]);
+      setCurrentStep(null);
+
       if (res.status === 422) {
-        // Trend was rejected by validation
         setValidationError(result.validation?.reason || result.message || "This doesn't appear to be a valid trend.");
-        setShowThinking(false);
         setLoading(false);
+        cleanup();
         return;
       }
 
-      setData(result);
+      // Small delay for visual completion
+      setTimeout(() => {
+        setData(result);
+        setLoading(false);
+      }, 500);
+
+      cleanup();
     } catch (error) {
       console.error("Failed to analyze trend", error);
+      setValidationError("Analysis failed. Please try again.");
+      setLoading(false);
+      cleanup();
     }
   };
 
   const handleStockClick = (keyword: string) => {
-    setQuery(keyword);
-    // Auto-search
-    setData(null);
-    setValidationError(null);
-    setShowThinking(true);
-    setLoading(true);
+    analyzeKeyword(keyword);
+  };
 
-    fetch("/api/trends/decay", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ keyword, userRole }),
-    })
-      .then((res) => res.json())
-      .then((result) => {
-        if (result.error === "Invalid trend") {
-          setValidationError(result.validation?.reason || result.message);
-          setShowThinking(false);
-          setLoading(false);
-        } else {
-          setData(result);
-        }
-      })
-      .catch((error) => {
-        console.error("Failed to analyze trend", error);
-        setShowThinking(false);
-        setLoading(false);
-      });
+  const handleBackToStocks = () => {
+    setData(null);
+    setSearchingKeyword("");
+    setCompletedSteps([]);
+    setCurrentStep(null);
   };
 
   return (
@@ -112,24 +132,12 @@ function Dashboard() {
       {/* Grain Overlay */}
       <div className="grain-overlay fixed inset-0 pointer-events-none z-50" />
 
-      {/* ThinkingUI Overlay */}
-      <AnimatePresence mode="wait">
-        {showThinking && (
-          <ThinkingUI
-            onComplete={() => {
-              setShowThinking(false);
-              setLoading(false);
-            }}
-          />
-        )}
-      </AnimatePresence>
-
       {/* Main HUD Container */}
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.2, duration: 0.6 }}
-        className={`relative z-10 w-[95vw] max-w-7xl mx-auto my-6 min-h-[calc(100vh-3rem)] rounded-2xl overflow-hidden transition-opacity duration-700 hud-container ${showThinking ? "opacity-0" : "opacity-100"}`}
+        className="relative z-10 w-[95vw] max-w-7xl mx-auto my-6 min-h-[calc(100vh-3rem)] rounded-2xl overflow-hidden hud-container"
       >
         {/* Corner Accents */}
         <div className="absolute top-0 left-0 w-16 h-16 border-l-2 border-t-2 border-cyan-400/50 rounded-tl-2xl" />
@@ -145,6 +153,14 @@ function Dashboard() {
               <span className="text-white">TREND</span>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 ml-1">PRISM</span>
             </h1>
+            {data && (
+              <button
+                onClick={handleBackToStocks}
+                className="ml-4 text-xs text-white/50 hover:text-white transition-colors"
+              >
+                ← Back to Trends
+              </button>
+            )}
           </div>
           <div className="flex gap-6 text-xs font-mono text-white/50">
             <span className="text-white/70">Welcome, {userName}</span>
@@ -178,11 +194,41 @@ function Dashboard() {
 
         {/* Dashboard Content */}
         <div className="px-8 py-6">
-          {data ? (
-            <TrendReport data={data as DecayAnalysis} />
-          ) : (
-            <TrendingStocks onStockClick={handleStockClick} />
-          )}
+          <AnimatePresence mode="wait">
+            {loading && searchingKeyword ? (
+              <motion.div
+                key="loading"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="py-12"
+              >
+                <AnalysisProgress
+                  currentStep={currentStep}
+                  completedSteps={completedSteps}
+                  keyword={searchingKeyword}
+                />
+              </motion.div>
+            ) : data ? (
+              <motion.div
+                key="report"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+              >
+                <TrendDashboard data={data as { keyword: string } & Record<string, unknown>} userRole={userRole} onRelatedTrendClick={handleStockClick} />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="stocks"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+              >
+                <TrendingStocks onStockClick={handleStockClick} />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </motion.div>
     </motion.div>

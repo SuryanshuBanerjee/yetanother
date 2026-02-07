@@ -285,6 +285,7 @@ export async function POST(req: NextRequest) {
         const protocol = req.headers.get("x-forwarded-proto") || "http";
         const host = req.headers.get("host") || "localhost:3000";
         const baseUrl = `${protocol}://${host}`;
+        const startTime = Date.now();
 
         // ============================================================
         // STEP 1: Validation + Basic Metrics (PARALLEL)
@@ -294,6 +295,7 @@ export async function POST(req: NextRequest) {
             callInternalAPI(baseUrl, "/api/pipeline/validate", { keyword, userRole }),
             callInternalAPI(baseUrl, "/api/pipeline/basic-metrics", { keyword, userRole }),
         ]);
+        const step1End = Date.now();
 
         // Check validation
         if (!validation.isValid) {
@@ -313,6 +315,7 @@ export async function POST(req: NextRequest) {
             "/api/pipeline/advanced-inferences",
             { keyword, userRole, basicMetrics }
         );
+        const step2End = Date.now();
 
         // ============================================================
         // STEP 3: Verdict (needs advanced inferences)
@@ -323,6 +326,7 @@ export async function POST(req: NextRequest) {
             "/api/pipeline/verdict",
             { keyword, userRole, advancedInferences, basicMetrics }
         );
+        const step3End = Date.now();
 
         // ============================================================
         // Map to DecayAnalysis for frontend compatibility
@@ -374,6 +378,12 @@ export async function POST(req: NextRequest) {
                     verdict: "featherless",
                 },
                 completedAt: new Date().toISOString(),
+                timings: {
+                    total: Date.now() - startTime,
+                    step1: step1End - startTime,
+                    step2: step2End - step1End,
+                    step3: step3End - step2End,
+                },
                 userRole,
             },
         });

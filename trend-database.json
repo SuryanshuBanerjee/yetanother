@@ -1,5 +1,41 @@
 [
   {
+    "keyword": "làng xì trum",
+    "symbol": "#LXT",
+    "score": 50,
+    "change": -0.4,
+    "volume": "920.0K",
+    "risk": "medium",
+    "category": "Unknown",
+    "phase": "Saturation",
+    "lastSearched": "2026-02-07T20:19:13.283Z",
+    "searchCount": 2
+  },
+  {
+    "keyword": "trum",
+    "symbol": "#TRUM",
+    "score": 50,
+    "change": 15.1,
+    "volume": "360.0K",
+    "risk": "medium",
+    "category": "Politics",
+    "phase": "Saturation",
+    "lastSearched": "2026-02-07T20:16:13.410Z",
+    "searchCount": 2
+  },
+  {
+    "keyword": "bad bunny",
+    "symbol": "#BB",
+    "score": -256,
+    "change": 321,
+    "volume": "650.0K",
+    "risk": "critical",
+    "category": "Entertainment",
+    "phase": "Growth",
+    "lastSearched": "2026-02-07T20:46:33.316Z",
+    "searchCount": 7
+  },
+  {
     "keyword": "download admit card",
     "symbol": "#DAC",
     "score": 50,
@@ -62,14 +98,14 @@
   {
     "keyword": "new zealand vs usa",
     "symbol": "#NZVU",
-    "score": 77,
-    "change": 11.9,
-    "volume": "1M",
+    "score": 80,
+    "change": 0,
+    "volume": "30.0K",
     "risk": "low",
-    "category": "Trending",
-    "phase": "Growth",
-    "lastSearched": "2026-02-07T18:45:39.815Z",
-    "searchCount": 0
+    "category": "Unknown",
+    "phase": "Decay",
+    "lastSearched": "2026-02-07T20:19:44.787Z",
+    "searchCount": 1
   },
   {
     "keyword": "west indies vs scotland",
@@ -116,18 +152,6 @@
     "risk": "low",
     "category": "Trending",
     "phase": "Growth",
-    "lastSearched": "2026-02-07T18:45:39.815Z",
-    "searchCount": 0
-  },
-  {
-    "keyword": "bad bunny",
-    "symbol": "#BB",
-    "score": 56,
-    "change": -0.8,
-    "volume": "1M",
-    "risk": "medium",
-    "category": "Music",
-    "phase": "Peak",
     "lastSearched": "2026-02-07T18:45:39.815Z",
     "searchCount": 0
   },
@@ -470,14 +494,14 @@
   {
     "keyword": "barcelona - r.c.d. mallorca",
     "symbol": "#BRM",
-    "score": 20,
-    "change": -8.2,
-    "volume": "200K",
-    "risk": "critical",
+    "score": 85,
+    "change": 4900,
+    "volume": "1.0M",
+    "risk": "low",
     "category": "Trending",
-    "phase": "Decay",
-    "lastSearched": "2026-02-07T18:45:39.815Z",
-    "searchCount": 0
+    "phase": "Growth",
+    "lastSearched": "2026-02-07T20:41:06.882Z",
+    "searchCount": 1
   },
   {
     "keyword": "grazalema",
@@ -568,30 +592,6 @@
     "symbol": "#NVP",
     "score": 87,
     "change": 19.7,
-    "volume": "2M",
-    "risk": "low",
-    "category": "Tech",
-    "phase": "Growth",
-    "lastSearched": "2026-02-07T18:45:39.814Z",
-    "searchCount": 0
-  },
-  {
-    "keyword": "shadley van schalkwyk",
-    "symbol": "#SVS",
-    "score": 93,
-    "change": 29.4,
-    "volume": "2M",
-    "risk": "low",
-    "category": "Trending",
-    "phase": "Growth",
-    "lastSearched": "2026-02-07T18:45:39.814Z",
-    "searchCount": 0
-  },
-  {
-    "keyword": "capitals vs royal challengers",
-    "symbol": "#CVRC",
-    "score": 88,
-    "change": 22.6,
     "volume": "2M",
     "risk": "low",
     "category": "Tech",

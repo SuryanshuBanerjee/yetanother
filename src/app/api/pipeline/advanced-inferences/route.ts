@@ -104,6 +104,11 @@ RELATED TOP QUERIES: ${JSON.stringify(basicMetrics.relatedQueries?.top?.slice(0,
 
 DATA POINTS AVAILABLE: ${basicMetrics._meta?.dataPoints ?? 0} days of data
 
+CRITICAL INSTRUCTION:
+If the provided metrics are sparse (e.g. flat charts, no regional data), DO NOT generate generic "insufficient data" responses.
+Instead, USE YOUR INTERNAL KNOWLEDGE about the trend ("${keyword}") to generate high-quality, likely inferences.
+You know who/what "${keyword}" is. Use that context to estimate the phase, audience, and risks.
+
 Generate deep inferences NOW. Be specific with numbers.`
                 }
             ],

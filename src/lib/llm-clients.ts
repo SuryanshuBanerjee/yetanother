@@ -62,11 +62,11 @@ export async function callGroq(
 // Tries multiple free models with retry on rate-limit
 // ============================================================
 const OPENROUTER_MODELS = [
-    "arcee-ai/trinity-mini:free",
-    "meta-llama/llama-3.3-70b-instruct:free",
     "google/gemini-2.0-flash-exp:free",
-    "deepseek/deepseek-r1:free",
+    "arcee-ai/trinity-mini:free",
     "mistralai/mistral-small-3.1-24b-instruct:free",
+    "meta-llama/llama-3.3-70b-instruct:free",
+    "deepseek/deepseek-r1:free",
 ];
 
 export async function callOpenRouter(
