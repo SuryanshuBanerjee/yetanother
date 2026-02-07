@@ -1,11 +1,17 @@
 "use client";
 
+import { ReactNode } from "react";
 import { motion } from "framer-motion";
-import { TrendingUp, TrendingDown, Download, Share2, ExternalLink } from "lucide-react";
+import { TrendingUp, TrendingDown, Download, Share2 } from "lucide-react";
 import CandlestickChart from "./CandlestickChart";
 import KeyMetrics from "./KeyMetrics";
 import ProsCons from "./ProsCons";
 import SimilarTrends from "./SimilarTrends";
+import TrendTriade from "./TrendTriade";
+import VelocityGauges from "./VelocityGauges";
+import ActionItems from "./ActionItems";
+import MetricsHistoryChart from "./MetricsHistoryChart";
+import { SECTION_ORDER, type SectionId } from "@/lib/role-config";
 
 interface TrendDashboardProps {
     data: {
@@ -45,6 +51,19 @@ interface TrendDashboardProps {
             collapseProbability?: number;
             timeToCollapse?: string;
             llmAnalysis?: string;
+            trendTriade?: {
+                communityFragmentation: { score: number; indicators: string[]; detail: string };
+                semanticSaturation: { score: number; indicators: string[]; detail: string };
+                commercialExhaustion: { score: number; indicators: string[]; detail: string };
+            };
+            deltaVelocity?: number | { value: number; label: string; detail: string };
+            peakWidth?: number | { days: number; label: string; detail: string };
+            decayHalfLife?: number | { days: number; label: string; detail: string };
+            regionalSkew?: {
+                concentration?: number;
+                dominantRegion?: string;
+                isGlobal?: boolean;
+            };
         };
         // Verdict
         verdict?: {
@@ -55,7 +74,17 @@ interface TrendDashboardProps {
             summary?: string;
             timeHorizon?: string;
             riskLevel?: string;
+            actionItems?: string[];
+            opportunityWindow?: string;
         };
+        // Metrics History
+        metricsHistory?: {
+            date: string;
+            entropy?: number;
+            modularity?: number;
+            clustering?: number;
+            volume?: number;
+        }[];
         // Legacy fields for compatibility
         phase?: string;
         summary?: string;
@@ -73,6 +102,7 @@ export default function TrendDashboard({ data, onRelatedTrendClick, userRole = "
         basicMetrics,
         advancedInferences,
         verdict,
+        metricsHistory,
     } = data;
 
     const category = validation?.category || "General";
@@ -83,10 +113,114 @@ export default function TrendDashboard({ data, onRelatedTrendClick, userRole = "
 
     const phase = advancedInferences?.phase || data.phase || "Unknown";
     const weekChange = metrics?.weekOverWeekChange || 0;
+
+    // Extract numeric values from advanced inferences (API returns objects like {value, label, detail})
+    const deltaVelocityNum = advancedInferences?.deltaVelocity == null ? undefined
+        : typeof advancedInferences.deltaVelocity === "object" ? advancedInferences.deltaVelocity.value
+        : advancedInferences.deltaVelocity;
+    const peakWidthNum = advancedInferences?.peakWidth == null ? undefined
+        : typeof advancedInferences.peakWidth === "object" ? advancedInferences.peakWidth.days
+        : advancedInferences.peakWidth;
+    const decayHalfLifeNum = advancedInferences?.decayHalfLife == null ? undefined
+        : typeof advancedInferences.decayHalfLife === "object" ? advancedInferences.decayHalfLife.days
+        : advancedInferences.decayHalfLife;
     const isUp = weekChange >= 0;
 
     const verdictText = verdict?.verdict || (data.healthScore && data.healthScore > 60 ? "BUY" : data.healthScore && data.healthScore > 40 ? "HOLD" : "WATCH");
     const summaryText = verdict?.summary || basicMetrics?.llmInterpretation || advancedInferences?.llmAnalysis || data.summary || "";
+    const deepAnalysis = advancedInferences?.llmAnalysis && verdict?.summary && advancedInferences.llmAnalysis !== verdict.summary
+        ? advancedInferences.llmAnalysis
+        : null;
+
+    // Build section map — each section only renders if it has data
+    const sectionMap: Record<SectionId, ReactNode> = {
+        Chart: interestOverTime.length > 0 ? (
+            <CandlestickChart data={interestOverTime} keyword={keyword} userRole={userRole} />
+        ) : null,
+
+        KeyMetrics: metrics ? (
+            <KeyMetrics metrics={metrics} topRegions={topRegions} category={category} userRole={userRole} />
+        ) : null,
+
+        ActionItems: verdict?.actionItems && verdict.actionItems.length > 0 ? (
+            <div id="action-items-section">
+                <ActionItems
+                    actionItems={verdict.actionItems}
+                    timeHorizon={verdict.timeHorizon}
+                    opportunityWindow={verdict.opportunityWindow}
+                    userRole={userRole}
+                />
+            </div>
+        ) : null,
+
+        ProsCons: (
+            <ProsCons
+                pros={verdict?.pros || []}
+                cons={verdict?.cons || []}
+                verdict={verdictText}
+                confidence={verdict?.confidence}
+                userRole={userRole}
+                summary={verdict?.summary}
+                hasActionItems={!!verdict?.actionItems && verdict.actionItems.length > 0}
+            />
+        ),
+
+        Triade: advancedInferences?.trendTriade ? (
+            <TrendTriade trendTriade={advancedInferences.trendTriade} userRole={userRole} />
+        ) : null,
+
+        Velocity: (deltaVelocityNum != null || peakWidthNum != null || decayHalfLifeNum != null || advancedInferences?.regionalSkew) ? (
+            <VelocityGauges
+                deltaVelocity={deltaVelocityNum}
+                peakWidth={peakWidthNum}
+                decayHalfLife={decayHalfLifeNum}
+                regionalSkew={advancedInferences?.regionalSkew}
+            />
+        ) : null,
+
+        MetricsHistory: metricsHistory && metricsHistory.length > 0 ? (
+            <MetricsHistoryChart metricsHistory={metricsHistory} userRole={userRole} />
+        ) : null,
+
+        About: summaryText ? (
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-xl border border-white/10 bg-gradient-to-br from-white/5 to-transparent p-6"
+            >
+                <h3 className="text-lg font-bold text-white mb-3">About</h3>
+                <p className="text-white/70 leading-relaxed">{summaryText}</p>
+                {deepAnalysis && (
+                    <div className="mt-4 pt-4 border-t border-white/10">
+                        <h4 className="text-sm font-semibold text-cyan-400 mb-2">AI Deep Analysis</h4>
+                        <p className="text-white/60 text-sm leading-relaxed">{deepAnalysis}</p>
+                    </div>
+                )}
+                {advancedInferences?.timeToCollapse && (
+                    <div className="mt-4 pt-4 border-t border-white/10 flex items-center gap-4 text-sm">
+                        <span className="text-white/50">Time Horizon:</span>
+                        <span className="text-neon-blue font-mono">{advancedInferences.timeToCollapse}</span>
+                        <span className="text-white/50">Collapse Probability:</span>
+                        <span className={`font-mono ${(advancedInferences.collapseProbability || 0) > 60 ? "text-red-400" : "text-green-400"}`}>
+                            {advancedInferences.collapseProbability}%
+                        </span>
+                    </div>
+                )}
+            </motion.div>
+        ) : null,
+
+        SimilarTrends: (
+            <SimilarTrends
+                trends={relatedQueries.top || []}
+                rising={relatedQueries.rising || []}
+                onTrendClick={onRelatedTrendClick}
+                userRole={userRole}
+            />
+        ),
+    };
+
+    // Get section order for current role, fallback to general-user
+    const orderedSections = SECTION_ORDER[userRole] || SECTION_ORDER["general-user"];
 
     return (
         <motion.div
@@ -94,7 +228,7 @@ export default function TrendDashboard({ data, onRelatedTrendClick, userRole = "
             animate={{ opacity: 1 }}
             className="space-y-6"
         >
-            {/* Header Section - Screener style */}
+            {/* Header Section - Screener style (pinned, outside dynamic ordering) */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -126,59 +260,23 @@ export default function TrendDashboard({ data, onRelatedTrendClick, userRole = "
                 </div>
             </motion.div>
 
-            {/* Candlestick Chart */}
-            <CandlestickChart data={interestOverTime} keyword={keyword} />
+            {/* Dynamic Section Ordering Based on Role */}
+            {orderedSections.map((sectionId, index) => {
+                const section = sectionMap[sectionId];
+                if (!section) return null;
+                return (
+                    <motion.div
+                        key={sectionId}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.08 }}
+                    >
+                        {section}
+                    </motion.div>
+                );
+            })}
 
-            {/* Key Metrics Grid */}
-            {metrics && (
-                <KeyMetrics
-                    metrics={metrics}
-                    topRegions={topRegions}
-                    category={category}
-                />
-            )}
-
-            {/* About Section */}
-            {summaryText && (
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="rounded-xl border border-white/10 bg-gradient-to-br from-white/5 to-transparent p-6"
-                >
-                    <h3 className="text-lg font-bold text-white mb-3">About</h3>
-                    <p className="text-white/70 leading-relaxed">{summaryText}</p>
-                    {advancedInferences?.timeToCollapse && (
-                        <div className="mt-4 pt-4 border-t border-white/10 flex items-center gap-4 text-sm">
-                            <span className="text-white/50">Time Horizon:</span>
-                            <span className="text-neon-blue font-mono">{advancedInferences.timeToCollapse}</span>
-                            <span className="text-white/50">Collapse Probability:</span>
-                            <span className={`font-mono ${(advancedInferences.collapseProbability || 0) > 60 ? "text-red-400" : "text-green-400"}`}>
-                                {advancedInferences.collapseProbability}%
-                            </span>
-                        </div>
-                    )}
-                </motion.div>
-            )}
-
-            {/* Pros & Cons */}
-            <ProsCons
-                pros={verdict?.pros || []}
-                cons={verdict?.cons || []}
-                verdict={verdictText}
-                confidence={verdict?.confidence}
-                userRole={userRole}
-                summary={verdict?.summary}
-            />
-
-            {/* Similar Trends */}
-            <SimilarTrends
-                trends={relatedQueries.top || []}
-                rising={relatedQueries.rising || []}
-                onTrendClick={onRelatedTrendClick}
-            />
-
-            {/* Footer */}
+            {/* Footer (pinned, outside dynamic ordering) */}
             <div className="text-center text-xs text-white/30 pt-8 border-t border-white/5 font-mono">
                 Generated by TREND PRISM V2.0 • Multi-Model AI Pipeline • Groq + OpenRouter + Featherless
             </div>

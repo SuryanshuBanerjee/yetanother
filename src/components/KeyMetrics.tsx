@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { TrendingUp, TrendingDown, Minus, BarChart3, Users, Zap, Globe, Target, Clock } from "lucide-react";
+import { METRIC_EMPHASIS, METRIC_DESCRIPTIONS } from "@/lib/role-config";
 
 interface Metrics {
     currentInterest: number;
@@ -19,6 +20,7 @@ interface KeyMetricsProps {
     metrics: Metrics;
     topRegions?: { name: string; value: number }[];
     category?: string;
+    userRole?: string;
 }
 
 const MetricCard = ({
@@ -29,6 +31,7 @@ const MetricCard = ({
     trend,
     delay = 0,
     description,
+    emphasized = false,
 }: {
     label: string;
     value: string | number;
@@ -37,13 +40,14 @@ const MetricCard = ({
     trend?: "up" | "down" | "neutral";
     delay?: number;
     description?: string;
+    emphasized?: boolean;
 }) => (
     <motion.div
         title={description}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay }}
-        className="p-4 rounded-xl border border-white/10 bg-gradient-to-br from-white/5 to-transparent hover:border-white/20 transition-colors"
+        className={`p-4 rounded-xl border bg-gradient-to-br from-white/5 to-transparent hover:border-white/20 transition-colors ${emphasized ? "border-l-2 border-cyan-400/60 shadow-[0_0_12px_rgba(0,240,255,0.08)]" : "border-white/10"}`}
     >
         <div className="flex items-start justify-between mb-2">
             <Icon className="w-4 h-4 text-white/40" />
@@ -62,7 +66,7 @@ const MetricCard = ({
     </motion.div>
 );
 
-export default function KeyMetrics({ metrics, topRegions = [], category = "General" }: KeyMetricsProps) {
+export default function KeyMetrics({ metrics, topRegions = [], category = "General", userRole = "general-user" }: KeyMetricsProps) {
     const getTrend = (value: number): "up" | "down" | "neutral" => {
         if (value > 5) return "up";
         if (value < -5) return "down";
@@ -74,6 +78,9 @@ export default function KeyMetrics({ metrics, topRegions = [], category = "Gener
         return `${sign}${value.toFixed(1)}%`;
     };
 
+    const emphSet = new Set(METRIC_EMPHASIS[userRole] || METRIC_EMPHASIS["general-user"]);
+    const descs = METRIC_DESCRIPTIONS[userRole] || METRIC_DESCRIPTIONS["general-user"];
+
     return (
         <div className="space-y-4">
             {/* Primary Metrics Row */}
@@ -84,7 +91,8 @@ export default function KeyMetrics({ metrics, topRegions = [], category = "Gener
                     icon={BarChart3}
                     trend={getTrend(metrics.weekOverWeekChange)}
                     delay={0}
-                    description="Current popularity relative to peak (0-100)"
+                    description={descs["Current Interest"]}
+                    emphasized={emphSet.has("Current Interest")}
                 />
                 <MetricCard
                     label="Peak Interest"
@@ -92,7 +100,8 @@ export default function KeyMetrics({ metrics, topRegions = [], category = "Gener
                     subValue={`${metrics.daysFromPeak}d ago`}
                     icon={Target}
                     delay={0.05}
-                    description="Highest popularity score reached in the last 90 days"
+                    description={descs["Peak Interest"]}
+                    emphasized={emphSet.has("Peak Interest")}
                 />
                 <MetricCard
                     label="Week Change"
@@ -100,7 +109,8 @@ export default function KeyMetrics({ metrics, topRegions = [], category = "Gener
                     icon={TrendingUp}
                     trend={getTrend(metrics.weekOverWeekChange)}
                     delay={0.1}
-                    description="7-day growth rate compared to previous week"
+                    description={descs["Week Change"]}
+                    emphasized={emphSet.has("Week Change")}
                 />
                 <MetricCard
                     label="Month Change"
@@ -108,7 +118,8 @@ export default function KeyMetrics({ metrics, topRegions = [], category = "Gener
                     icon={TrendingDown}
                     trend={getTrend(metrics.monthOverMonthChange)}
                     delay={0.15}
-                    description="30-day growth rate compared to previous month"
+                    description={descs["Month Change"]}
+                    emphasized={emphSet.has("Month Change")}
                 />
                 <MetricCard
                     label="Volatility"
@@ -116,7 +127,8 @@ export default function KeyMetrics({ metrics, topRegions = [], category = "Gener
                     subValue={metrics.volatility > 40 ? "High" : metrics.volatility > 20 ? "Medium" : "Low"}
                     icon={Zap}
                     delay={0.2}
-                    description="How much interest fluctuates day-to-day (Risk metric)"
+                    description={descs["Volatility"]}
+                    emphasized={emphSet.has("Volatility")}
                 />
                 <MetricCard
                     label="Consistency"
@@ -124,7 +136,8 @@ export default function KeyMetrics({ metrics, topRegions = [], category = "Gener
                     subValue="Above 50% threshold"
                     icon={Clock}
                     delay={0.25}
-                    description="Reliability of interest over time (higher is better)"
+                    description={descs["Consistency"]}
+                    emphasized={emphSet.has("Consistency")}
                 />
             </div>
 

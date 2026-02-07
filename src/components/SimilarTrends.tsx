@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { TrendingUp, TrendingDown, Minus, ExternalLink } from "lucide-react";
+import { ROLE_CONTEXT } from "@/lib/role-config";
 
 interface SimilarTrend {
     query?: string;
@@ -15,9 +16,10 @@ interface SimilarTrendsProps {
     trends: SimilarTrend[];
     rising: SimilarTrend[];
     onTrendClick?: (trend: string) => void;
+    userRole?: string;
 }
 
-export default function SimilarTrends({ trends = [], rising = [], onTrendClick }: SimilarTrendsProps) {
+export default function SimilarTrends({ trends = [], rising = [], onTrendClick, userRole = "general-user" }: SimilarTrendsProps) {
     const allTrends = [
         ...rising.map((t) => ({ ...t, isRising: true })),
         ...trends.filter((t) => !rising.some((r) => r.query === t.query)).map((t) => ({ ...t, isRising: false })),
@@ -38,9 +40,12 @@ export default function SimilarTrends({ trends = [], rising = [], onTrendClick }
             className="rounded-xl border border-white/10 bg-gradient-to-br from-white/5 to-transparent overflow-hidden"
         >
             {/* Header */}
-            <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
-                <span className="font-bold text-white">Related Trends</span>
-                <span className="text-xs text-white/40 font-mono">{allTrends.length} trends</span>
+            <div className="px-4 py-3 border-b border-white/10">
+                <div className="flex items-center justify-between">
+                    <span className="font-bold text-white">Related Trends</span>
+                    <span className="text-xs text-white/40 font-mono">{allTrends.length} trends</span>
+                </div>
+                <p className="text-xs text-white/30 mt-1">{(ROLE_CONTEXT[userRole] || ROLE_CONTEXT["general-user"]).similarTrends}</p>
             </div>
 
             {/* Table */}

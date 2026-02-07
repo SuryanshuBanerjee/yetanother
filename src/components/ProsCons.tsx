@@ -56,7 +56,11 @@ const METRIC_EXPLANATIONS: Record<string, string> = {
     "Consistency": "How reliably the trend maintains interest — like a stock's dividend consistency",
 };
 
-export default function ProsCons({ pros = [], cons = [], verdict, confidence, userRole = "general-user", summary }: ProsConsProps) {
+interface ProsConsFullProps extends ProsConsProps {
+    hasActionItems?: boolean;
+}
+
+export default function ProsCons({ pros = [], cons = [], verdict, confidence, userRole = "general-user", summary, hasActionItems }: ProsConsFullProps) {
     const getVerdictColor = (v: string) => {
         switch (v?.toUpperCase()) {
             case "BUY":
@@ -103,6 +107,14 @@ export default function ProsCons({ pros = [], cons = [], verdict, confidence, us
                             <p className="text-white/80 leading-relaxed">{verdictExplanation}</p>
                             {summary && (
                                 <p className="text-white/50 text-sm mt-2 italic">{summary}</p>
+                            )}
+                            {hasActionItems && (
+                                <button
+                                    onClick={() => document.getElementById("action-items-section")?.scrollIntoView({ behavior: "smooth" })}
+                                    className="text-xs text-cyan-400 hover:text-cyan-300 mt-2 inline-flex items-center gap-1 transition-colors"
+                                >
+                                    See your action items &rarr;
+                                </button>
                             )}
                         </div>
                     </div>

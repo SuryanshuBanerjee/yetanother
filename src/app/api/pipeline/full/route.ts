@@ -35,7 +35,7 @@ function mapToDecayAnalysis(
 
     const currentInterest = (metrics.currentInterest as number) || 50;
     const peakInterest = (metrics.peakInterest as number) || 100;
-    const overallRisk = (advancedInferences.overallRiskScore as number) || 50;
+    const overallRisk = Math.max(0, Math.min(100, (advancedInferences.overallRiskScore as number) || 50));
     const decayScore = Math.round(overallRisk);
     const healthScore = 100 - decayScore;
 
@@ -244,7 +244,7 @@ function mapToDecayAnalysis(
         healthScore,
         phase: (advancedInferences.phase as "Growth" | "Peak" | "Saturation" | "Decay" | "Revival" | "Zombie") || "Saturation",
         velocity: velocityMap[velLabel] || "Stable",
-        collapseProbability: (advancedInferences.collapseProbability as number) || Math.min(99, decayScore + 10),
+        collapseProbability: Math.max(0, Math.min(99, (advancedInferences.collapseProbability as number) || Math.min(99, decayScore + 10))),
         timeToCollapse: (advancedInferences.timeToCollapse as string) || "2-3 Weeks",
         origin: {
             year: new Date().getFullYear().toString(),
@@ -343,11 +343,14 @@ export async function POST(req: NextRequest) {
         // Store in trend database
         // ============================================================
         try {
+            const rawChange = (basicMetrics.metrics as Record<string, number>)?.weekOverWeekChange || 0;
             await addOrUpdateTrend({
                 keyword,
-                score: decayAnalysis.healthScore,
-                change: (basicMetrics.metrics as Record<string, number>)?.weekOverWeekChange || 0,
-                volume: (basicMetrics.metrics as Record<string, number>)?.currentInterest * 10000 || 50000,
+                score: Math.max(0, Math.min(100, decayAnalysis.healthScore)),
+                change: Math.max(-100, Math.min(500, rawChange)),
+                volume: (basicMetrics._meta as Record<string, number>)?.dataPoints
+                    ? Math.round(((basicMetrics.metrics as Record<string, number>)?.currentInterest || 50) * 1000)
+                    : 50000,
                 category: (validation.category as string) || "General",
                 phase: decayAnalysis.phase,
             });

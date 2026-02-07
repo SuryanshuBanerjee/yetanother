@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { motion } from "framer-motion";
+import { ROLE_CONTEXT } from "@/lib/role-config";
 
 interface CandlestickData {
     time: string;
@@ -12,9 +13,10 @@ interface CandlestickData {
 interface CandlestickChartProps {
     data: CandlestickData[];
     keyword: string;
+    userRole?: string;
 }
 
-export default function CandlestickChart({ data, keyword }: CandlestickChartProps) {
+export default function CandlestickChart({ data, keyword, userRole = "general-user" }: CandlestickChartProps) {
     const chartData = useMemo(() => {
         if (!data || data.length === 0) return [];
         return data.slice(-30); // Last 30 days
@@ -64,6 +66,7 @@ export default function CandlestickChart({ data, keyword }: CandlestickChartProp
                 <div>
                     <h3 className="text-lg font-bold text-white">Popularity Over Time</h3>
                     <p className="text-xs text-white/40 font-mono">Google Trends Interest (0-100)</p>
+                    <p className="text-xs text-white/30 mt-1">{(ROLE_CONTEXT[userRole] || ROLE_CONTEXT["general-user"]).chart}</p>
                 </div>
                 <div className="flex gap-4 text-xs">
                     <span className="flex items-center gap-2">

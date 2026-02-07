@@ -140,13 +140,17 @@ export async function addOrUpdateTrend(data: {
             ? `${(data.volume / 1000).toFixed(1)}K`
             : String(data.volume);
 
+    // Clamp values to sane ranges (LLMs can return wild numbers)
+    const clampedScore = Math.max(0, Math.min(100, data.score));
+    const clampedChange = Math.max(-100, Math.min(500, data.change));
+
     const trend: StoredTrend = {
         keyword: data.keyword,
         symbol: generateSymbol(data.keyword),
-        score: Math.round(data.score),
-        change: Math.round(data.change * 10) / 10,
+        score: Math.round(clampedScore),
+        change: Math.round(clampedChange * 10) / 10,
         volume: volumeStr,
-        risk: determineRisk(data.score, data.change),
+        risk: determineRisk(clampedScore, clampedChange),
         category: data.category,
         phase: data.phase,
         lastSearched: new Date().toISOString(),

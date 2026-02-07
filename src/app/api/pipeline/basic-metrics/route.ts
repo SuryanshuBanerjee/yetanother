@@ -26,7 +26,11 @@ interface RelatedItem {
     link: string;
 }
 
-const API_TIMEOUT = 5000; // 5 seconds timeout for Google Trends
+const API_TIMEOUT = 3000; // 3 seconds timeout for Google Trends
+
+// In-memory metrics cache (keyword → {data, timestamp})
+const metricsCache = new Map<string, { data: Record<string, unknown>; ts: number }>();
+const CACHE_TTL = 60 * 60 * 1000; // 1 hour
 
 async function withTimeout<T>(promise: Promise<T>, fallbackValue: T): Promise<T> {
     const timeout = new Promise<T>((resolve) => {
@@ -219,18 +223,24 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Keyword required" }, { status: 400 });
         }
 
+        // Check cache first — return immediately if fresh
+        const cacheKey = keyword.toLowerCase();
+        const cached = metricsCache.get(cacheKey);
+        if (cached && Date.now() - cached.ts < CACHE_TTL) {
+            console.log(`[basic-metrics] Cache hit for "${keyword}"`);
+            return NextResponse.json(cached.data);
+        }
+
         const searchTerm = keyword.replace("#", "").trim();
         const localTrends = await getTrends();
         const storedTrend = localTrends.find(t => t.keyword.toLowerCase() === keyword.toLowerCase());
         const source = storedTrend ? "hybrid-local" : "google-trends";
 
-        // Fetch all PyTrends data in parallel
-        // If stored trend exists, strictly limit fetching time or handle failures gracefully
-        const [timeline, regions, relatedQueries, relatedTopics] = await Promise.all([
+        // Fetch PyTrends data in parallel (dropped relatedTopics — redundant with relatedQueries)
+        const [timeline, regions, relatedQueries] = await Promise.all([
             withTimeout(fetchInterestOverTime(searchTerm), []),
             withTimeout(fetchInterestByRegion(searchTerm), []),
             withTimeout(fetchRelatedQueries(searchTerm), { top: [], rising: [] }),
-            withTimeout(fetchRelatedTopics(searchTerm), { top: [], rising: [] }),
         ]);
 
         // Synthesize data if PyTrends failed or returned empty
@@ -238,6 +248,10 @@ export async function POST(req: NextRequest) {
 
         // Compute numerical metrics
         let metrics = computeMetrics(finalTimeline);
+
+        // Clamp computed values to sane ranges
+        metrics.weekOverWeekChange = Math.max(-100, Math.min(500, metrics.weekOverWeekChange));
+        metrics.monthOverMonthChange = Math.max(-100, Math.min(500, metrics.monthOverMonthChange));
 
         // If we have stored trend data but PyTrends failed, override with stored stats
         if (timeline.length === 0 && storedTrend) {
@@ -262,7 +276,7 @@ export async function POST(req: NextRequest) {
             .slice(0, 15)
             .map((r: RegionData) => ({ name: r.geoName, code: r.geoCode, value: r.value[0] }));
 
-        // Get LLM interpretation of the basic metrics
+        // Get LLM interpretation (runs after data is ready — Groq is fast ~1s)
         const roleContext = ROLE_PROMPTS[userRole] || ROLE_PROMPTS["general-user"];
 
         let llmInterpretation = "";
@@ -272,7 +286,7 @@ export async function POST(req: NextRequest) {
                     {
                         role: "system",
                         content: `You are TREND PRISM's metrics interpreter.
-                        
+
 ${roleContext}
 
 Given raw Google Trends data, provide a sharp, data-driven interpretation.
@@ -297,8 +311,7 @@ Volatility: ${metrics.volatility}%
 Days Since Peak: ${metrics.daysFromPeak}
 Consistency Score: ${metrics.consistencyScore}/100
 Top Regions: ${topRegions.length > 0 ? topRegions.slice(0, 5).map((r: { name: string; value: number }) => `${r.name} (${r.value})`).join(", ") : "No regional data (Likely global or API limit)"}
-Related Rising Queries: ${relatedQueries.rising.length > 0 ? relatedQueries.rising.slice(0, 5).map((q: RelatedItem) => q.query).join(", ") : "none"}
-Related Topics: ${relatedTopics.top.length > 0 ? relatedTopics.top.slice(0, 5).map((t: RelatedItem) => t.topic?.title || t.query).join(", ") : "none"}`
+Related Rising Queries: ${relatedQueries.rising.length > 0 ? relatedQueries.rising.slice(0, 5).map((q: RelatedItem) => q.query).join(", ") : "none"}`
                     }
                 ],
                 { temperature: 0.6, maxTokens: 400 }
@@ -318,22 +331,14 @@ Related Topics: ${relatedTopics.top.length > 0 ? relatedTopics.top.slice(0, 5).m
                 top: relatedQueries.top.map((q: RelatedItem) => ({ query: q.query, value: q.value })),
                 rising: relatedQueries.rising.map((q: RelatedItem) => ({ query: q.query, value: q.value })),
             },
-            relatedTopics: {
-                top: relatedTopics.top.map((t: RelatedItem) => ({
-                    title: t.topic?.title || t.query,
-                    type: t.topic?.type || "query",
-                    value: t.value,
-                })),
-                rising: relatedTopics.rising.map((t: RelatedItem) => ({
-                    title: t.topic?.title || t.query,
-                    type: t.topic?.type || "query",
-                    value: t.value,
-                })),
-            },
+            relatedTopics: { top: [], rising: [] },
             metrics,
             llmInterpretation,
             _meta: { source, dataPoints: finalTimeline.length + topRegions.length + relatedQueries.top.length },
         };
+
+        // Store in cache
+        metricsCache.set(cacheKey, { data: response, ts: Date.now() });
 
         return NextResponse.json(response);
     } catch (error) {

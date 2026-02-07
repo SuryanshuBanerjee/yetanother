@@ -1,5 +1,41 @@
 [
   {
+    "keyword": "barcelona - r.c.d. mallorca",
+    "symbol": "#BRM",
+    "score": 72,
+    "change": 18.5,
+    "volume": "200K",
+    "risk": "low",
+    "category": "Sports",
+    "phase": "Peak",
+    "lastSearched": "2026-02-07T21:14:32.153Z",
+    "searchCount": 3
+  },
+  {
+    "keyword": "bad bunny",
+    "symbol": "#BB",
+    "score": 15,
+    "change": 316,
+    "volume": "64.0K",
+    "risk": "critical",
+    "category": "Entertainment",
+    "phase": "Peak",
+    "lastSearched": "2026-02-07T21:22:50.266Z",
+    "searchCount": 8
+  },
+  {
+    "keyword": "new zealand vs usa",
+    "symbol": "#NZVU",
+    "score": 80,
+    "change": 0,
+    "volume": "30.0K",
+    "risk": "low",
+    "category": "Unknown",
+    "phase": "Decay",
+    "lastSearched": "2026-02-07T20:19:44.787Z",
+    "searchCount": 1
+  },
+  {
     "keyword": "làng xì trum",
     "symbol": "#LXT",
     "score": 50,
@@ -22,18 +58,6 @@
     "phase": "Saturation",
     "lastSearched": "2026-02-07T20:16:13.410Z",
     "searchCount": 2
-  },
-  {
-    "keyword": "bad bunny",
-    "symbol": "#BB",
-    "score": -256,
-    "change": 321,
-    "volume": "650.0K",
-    "risk": "critical",
-    "category": "Entertainment",
-    "phase": "Growth",
-    "lastSearched": "2026-02-07T20:46:33.316Z",
-    "searchCount": 7
   },
   {
     "keyword": "download admit card",
@@ -74,14 +98,14 @@
   {
     "keyword": "grammy winners 2026",
     "symbol": "#GW",
-    "score": 77,
-    "change": 7.6,
-    "volume": "2M",
-    "risk": "low",
+    "score": 15,
+    "change": 500,
+    "volume": "2.0K",
+    "risk": "critical",
     "category": "Music",
-    "phase": "Growth",
-    "lastSearched": "2026-02-07T18:45:39.815Z",
-    "searchCount": 0
+    "phase": "Decay",
+    "lastSearched": "2026-02-07T21:25:04.140Z",
+    "searchCount": 1
   },
   {
     "keyword": "alerta de lluvias intensas",
@@ -94,18 +118,6 @@
     "phase": "Growth",
     "lastSearched": "2026-02-07T18:45:39.815Z",
     "searchCount": 0
-  },
-  {
-    "keyword": "new zealand vs usa",
-    "symbol": "#NZVU",
-    "score": 80,
-    "change": 0,
-    "volume": "30.0K",
-    "risk": "low",
-    "category": "Unknown",
-    "phase": "Decay",
-    "lastSearched": "2026-02-07T20:19:44.787Z",
-    "searchCount": 1
   },
   {
     "keyword": "west indies vs scotland",
@@ -146,14 +158,14 @@
   {
     "keyword": "मौसम",
     "symbol": "#",
-    "score": 73,
-    "change": 0.6,
-    "volume": "1M",
-    "risk": "low",
+    "score": 50,
+    "change": -29,
+    "volume": "40.0K",
+    "risk": "critical",
     "category": "Trending",
-    "phase": "Growth",
-    "lastSearched": "2026-02-07T18:45:39.815Z",
-    "searchCount": 0
+    "phase": "Saturation",
+    "lastSearched": "2026-02-07T21:31:43.762Z",
+    "searchCount": 2
   },
   {
     "keyword": "bitcoin price",
@@ -170,14 +182,14 @@
   {
     "keyword": "copa del rey",
     "symbol": "#CDR",
-    "score": 63,
-    "change": 10.2,
-    "volume": "500K",
+    "score": 50,
+    "change": 500,
+    "volume": "10.0K",
     "risk": "medium",
     "category": "Trending",
-    "phase": "Peak",
-    "lastSearched": "2026-02-07T18:45:39.815Z",
-    "searchCount": 0
+    "phase": "Saturation",
+    "lastSearched": "2026-02-07T21:35:38.347Z",
+    "searchCount": 1
   },
   {
     "keyword": "albacete - barcelona",
@@ -490,18 +502,6 @@
     "phase": "Decay",
     "lastSearched": "2026-02-07T18:45:39.815Z",
     "searchCount": 0
-  },
-  {
-    "keyword": "barcelona - r.c.d. mallorca",
-    "symbol": "#BRM",
-    "score": 85,
-    "change": 4900,
-    "volume": "1.0M",
-    "risk": "low",
-    "category": "Trending",
-    "phase": "Growth",
-    "lastSearched": "2026-02-07T20:41:06.882Z",
-    "searchCount": 1
   },
   {
     "keyword": "grazalema",
