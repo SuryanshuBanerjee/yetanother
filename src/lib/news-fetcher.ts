@@ -1,4 +1,4 @@
-// News fetcher: Google News RSS + optional GNews API
+// News fetcher: Google News RSS + GNews API + OG image extraction
 // Must complete within 2s to not slow down the pipeline
 
 interface NewsArticle {
@@ -6,6 +6,8 @@ interface NewsArticle {
   description: string;
   source: string;
   date: string;
+  image?: string;
+  url?: string;
 }
 
 interface NewsResult {
@@ -15,15 +17,50 @@ interface NewsResult {
 }
 
 const NEWS_TIMEOUT = 2000; // 2 seconds max
+const OG_TIMEOUT = 1500;   // 1.5s per article for OG image
 
 async function fetchWithTimeout(url: string, timeoutMs: number): Promise<Response> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const res = await fetch(url, { signal: controller.signal });
+    const res = await fetch(url, { signal: controller.signal, redirect: "follow" });
     return res;
   } finally {
     clearTimeout(timer);
+  }
+}
+
+/** Fetch the og:image from an article URL */
+async function fetchOGImage(url: string): Promise<string | undefined> {
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), OG_TIMEOUT);
+    const res = await fetch(url, {
+      signal: controller.signal,
+      redirect: "follow",
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; TrendPrism/2.0)" },
+    });
+    clearTimeout(timer);
+    if (!res.ok) return undefined;
+    // Only read first 50KB to find the meta tag quickly
+    const reader = res.body?.getReader();
+    if (!reader) return undefined;
+    let html = "";
+    const decoder = new TextDecoder();
+    while (html.length < 50000) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      html += decoder.decode(value, { stream: true });
+      if (html.includes("</head>")) break;
+    }
+    reader.cancel().catch(() => {});
+
+    // Extract og:image
+    const match = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i)
+      || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i);
+    return match?.[1] || undefined;
+  } catch {
+    return undefined;
   }
 }
 
@@ -37,9 +74,10 @@ function parseRSSItems(xml: string): NewsArticle[] {
     const source = itemXml.match(/<source[^>]*>([\s\S]*?)<\/source>/)?.[1]?.replace(/<!\[CDATA\[(.*?)\]\]>/, "$1")?.trim() || "";
     const pubDate = itemXml.match(/<pubDate>([\s\S]*?)<\/pubDate>/)?.[1]?.trim() || "";
     const description = itemXml.match(/<description>([\s\S]*?)<\/description>/)?.[1]?.replace(/<!\[CDATA\[(.*?)\]\]>/, "$1")?.replace(/<[^>]+>/g, "")?.trim() || "";
+    const url = itemXml.match(/<link>([\s\S]*?)<\/link>/)?.[1]?.trim() || "";
 
     if (title) {
-      articles.push({ title, description: description || title, source, date: pubDate });
+      articles.push({ title, description: description || title, source, date: pubDate, url: url || undefined });
     }
   }
   return articles;
@@ -66,11 +104,13 @@ async function fetchGNews(keyword: string): Promise<NewsArticle[]> {
     const res = await fetchWithTimeout(url, NEWS_TIMEOUT);
     if (!res.ok) return [];
     const data = await res.json();
-    return (data.articles || []).map((a: { title: string; description: string; source: { name: string }; publishedAt: string }) => ({
+    return (data.articles || []).map((a: { title: string; description: string; source: { name: string }; publishedAt: string; image?: string; url?: string }) => ({
       title: a.title,
       description: a.description || a.title,
       source: a.source?.name || "",
       date: a.publishedAt || "",
+      image: a.image || undefined,
+      url: a.url || undefined,
     }));
   } catch {
     return [];
@@ -101,7 +141,7 @@ export async function fetchNews(keyword: string): Promise<NewsResult> {
     const seen = new Set<string>();
     const merged: NewsArticle[] = [];
 
-    // GNews first (richer descriptions)
+    // GNews first (richer descriptions + images)
     for (const a of gnewsArticles) {
       const key = a.title.toLowerCase().slice(0, 40);
       if (!seen.has(key)) {
@@ -118,10 +158,26 @@ export async function fetchNews(keyword: string): Promise<NewsResult> {
       }
     }
 
-    const headlines = merged.slice(0, 8).map(a => a.title);
-    const sentiment = guessSentiment(merged);
+    const final = merged.slice(0, 8);
 
-    return { headlines, articles: merged.slice(0, 8), sentiment };
+    // Fetch OG images for articles that don't have one (in parallel, non-blocking)
+    const needsImage = final.filter(a => !a.image && a.url);
+    if (needsImage.length > 0) {
+      const imageResults = await Promise.allSettled(
+        needsImage.map(a => fetchOGImage(a.url!))
+      );
+      needsImage.forEach((a, i) => {
+        const result = imageResults[i];
+        if (result.status === "fulfilled" && result.value) {
+          a.image = result.value;
+        }
+      });
+    }
+
+    const headlines = final.map(a => a.title);
+    const sentiment = guessSentiment(final);
+
+    return { headlines, articles: final, sentiment };
   } catch {
     return { headlines: [], articles: [], sentiment: "unknown" };
   }

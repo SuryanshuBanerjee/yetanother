@@ -1,5 +1,77 @@
 [
   {
+    "keyword": "Pokémon Trainer Campus Battle",
+    "symbol": "#PTCB",
+    "score": 70,
+    "change": 10,
+    "volume": "66.0K",
+    "risk": "low",
+    "category": "Gaming",
+    "phase": "Revival",
+    "lastSearched": "2026-02-08T04:46:06.681Z",
+    "searchCount": 1
+  },
+  {
+    "keyword": "pokemon",
+    "symbol": "#POKEM",
+    "score": 50,
+    "change": 1,
+    "volume": "99.0K",
+    "risk": "medium",
+    "category": "Entertainment",
+    "phase": "Saturation",
+    "lastSearched": "2026-02-08T04:42:43.182Z",
+    "searchCount": 9
+  },
+  {
+    "keyword": "Data Insight Drop (ELI5)",
+    "symbol": "#DIDE",
+    "score": 35,
+    "change": 17,
+    "volume": "48.0K",
+    "risk": "high",
+    "category": "Education/Content Strategy",
+    "phase": "Revival",
+    "lastSearched": "2026-02-08T04:36:12.709Z",
+    "searchCount": 2
+  },
+  {
+    "keyword": "Hawk Tuah",
+    "symbol": "#HT",
+    "score": 13,
+    "change": -52,
+    "volume": "25.0K",
+    "risk": "critical",
+    "category": "Meme, Entertainment, Culture",
+    "phase": "Decay",
+    "lastSearched": "2026-02-08T04:32:13.381Z",
+    "searchCount": 2
+  },
+  {
+    "keyword": "epstein",
+    "symbol": "#EPSTE",
+    "score": 42,
+    "change": 200,
+    "volume": "83.0K",
+    "risk": "high",
+    "category": "Politics",
+    "phase": "Growth",
+    "lastSearched": "2026-02-08T04:30:47.596Z",
+    "searchCount": 9
+  },
+  {
+    "keyword": "Moo Deng",
+    "symbol": "#MD",
+    "score": 35,
+    "change": 8,
+    "volume": "43.0K",
+    "risk": "high",
+    "category": "Food, Viral, Culture",
+    "phase": "Decay",
+    "lastSearched": "2026-02-08T04:29:39.589Z",
+    "searchCount": 1
+  },
+  {
     "keyword": "acm kjsse",
     "symbol": "#AK",
     "score": 25,
@@ -12,40 +84,16 @@
     "searchCount": 2
   },
   {
-    "keyword": "epstein",
-    "symbol": "#EPSTE",
-    "score": 43,
-    "change": 200,
-    "volume": "86.0K",
-    "risk": "high",
-    "category": "Politics",
-    "phase": "Peak",
-    "lastSearched": "2026-02-08T03:30:02.607Z",
-    "searchCount": 8
-  },
-  {
     "keyword": "2016 music",
     "symbol": "#MUSIC",
-    "score": 42,
-    "change": 41,
-    "volume": "42.0K",
+    "score": 35,
+    "change": 40,
+    "volume": "44.0K",
     "risk": "high",
     "category": "Unknown",
     "phase": "Revival",
-    "lastSearched": "2026-02-08T03:20:38.012Z",
-    "searchCount": 3
-  },
-  {
-    "keyword": "pokemon",
-    "symbol": "#POKEM",
-    "score": 90,
-    "change": 2,
-    "volume": "100.0K",
-    "risk": "low",
-    "category": "Entertainment",
-    "phase": "Peak",
-    "lastSearched": "2026-02-08T02:55:36.735Z",
-    "searchCount": 8
+    "lastSearched": "2026-02-08T04:47:58.029Z",
+    "searchCount": 4
   },
   {
     "keyword": "Skibidi Toilet",
@@ -548,54 +596,6 @@
     "risk": "high",
     "category": "Trending",
     "phase": "Saturation",
-    "lastSearched": "2026-02-07T18:45:39.815Z",
-    "searchCount": 0
-  },
-  {
-    "keyword": "england vs sri lanka",
-    "symbol": "#EVSL",
-    "score": 35,
-    "change": -7.2,
-    "volume": "500K",
-    "risk": "high",
-    "category": "Trending",
-    "phase": "Saturation",
-    "lastSearched": "2026-02-07T18:45:39.815Z",
-    "searchCount": 0
-  },
-  {
-    "keyword": "stt",
-    "symbol": "#STT",
-    "score": 41,
-    "change": -2.4,
-    "volume": "500K",
-    "risk": "high",
-    "category": "Finance",
-    "phase": "Saturation",
-    "lastSearched": "2026-02-07T18:45:39.815Z",
-    "searchCount": 0
-  },
-  {
-    "keyword": "super bowl time",
-    "symbol": "#SBT",
-    "score": 41,
-    "change": -6,
-    "volume": "500K",
-    "risk": "high",
-    "category": "Trending",
-    "phase": "Saturation",
-    "lastSearched": "2026-02-07T18:45:39.815Z",
-    "searchCount": 0
-  },
-  {
-    "keyword": "trumprx",
-    "symbol": "#TRUMP",
-    "score": 23,
-    "change": -4.7,
-    "volume": "500K",
-    "risk": "critical",
-    "category": "Politics",
-    "phase": "Decay",
     "lastSearched": "2026-02-07T18:45:39.815Z",
     "searchCount": 0
   }

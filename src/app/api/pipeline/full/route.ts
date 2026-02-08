@@ -502,7 +502,14 @@ export async function POST(req: NextRequest) {
             advancedInferences,
             verdict,
             newsHeadlines: newsResult.headlines.slice(0, 6),
-            newsArticles: newsResult.articles.slice(0, 6),
+            newsArticles: newsResult.articles.slice(0, 6).map(a => ({
+                title: a.title,
+                description: a.description,
+                source: a.source,
+                date: a.date,
+                image: a.image,
+                url: a.url,
+            })),
             newsSentiment: newsResult.sentiment,
 
             // DecayAnalysis for existing frontend compatibility

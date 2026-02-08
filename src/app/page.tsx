@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import TrendDashboard from "@/components/TrendDashboard";
 import { RoleProvider } from "@/components/RoleSelector";
@@ -39,6 +39,8 @@ function Dashboard() {
   const [showCampaignFinder, setShowCampaignFinder] = useState(false);
 
   const dashboardRef = useRef<HTMLDivElement>(null);
+  const searchCache = useRef<Map<string, { data: Record<string, unknown>; timestamp: number }>>(new Map());
+  const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
   const quizRole = (userData?.role as string) || "analyst";
   const userRole = ROLE_MAP[quizRole] || "general-user";
@@ -81,8 +83,24 @@ function Dashboard() {
     return () => timers.forEach(t => clearTimeout(t));
   };
 
-  const analyzeKeyword = async (keyword: string) => {
+  const analyzeKeyword = useCallback(async (keyword: string) => {
     if (!keyword) return;
+
+    const cacheKey = keyword.toLowerCase().trim();
+
+    // Check cache first
+    const cached = searchCache.current.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      setData(null);
+      setValidationError(null);
+      setSearchingKeyword(keyword);
+      setQuery(keyword);
+      setCompletedSteps(["validate", "metrics", "inferences", "verdict"]);
+      setCurrentStep(null);
+      setData(cached.data);
+      setLoading(false);
+      return;
+    }
 
     // Reset state
     setData(null);
@@ -114,6 +132,9 @@ function Dashboard() {
         return;
       }
 
+      // Cache the result
+      searchCache.current.set(cacheKey, { data: result, timestamp: Date.now() });
+
       // Small delay for visual completion
       setTimeout(() => {
         setData(result);
@@ -127,7 +148,7 @@ function Dashboard() {
       setLoading(false);
       cleanup();
     }
-  };
+  }, [userRole, platforms]);
 
   const handleStockClick = (keyword: string) => {
     analyzeKeyword(keyword);

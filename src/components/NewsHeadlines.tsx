@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Newspaper } from "lucide-react";
 
@@ -8,6 +9,8 @@ interface NewsArticle {
   description: string;
   source: string;
   date: string;
+  image?: string;
+  url?: string;
 }
 
 interface NewsHeadlinesProps {
@@ -16,11 +19,32 @@ interface NewsHeadlinesProps {
   sentiment?: string;
 }
 
+function Thumbnail({ src, alt }: { src: string; alt: string }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) return null;
+  return (
+    <div className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-white/5 border border-white/10">
+      <img
+        src={src}
+        alt={alt}
+        className="w-full h-full object-cover"
+        onError={() => setFailed(true)}
+        loading="lazy"
+        referrerPolicy="no-referrer"
+      />
+    </div>
+  );
+}
+
 export default function NewsHeadlines({ headlines, articles, sentiment }: NewsHeadlinesProps) {
   if (!headlines || headlines.length === 0) return null;
 
   const sentimentColor = sentiment === "positive" ? "text-green-400" : sentiment === "negative" ? "text-red-400" : "text-yellow-400";
   const sentimentLabel = sentiment === "positive" ? "Positive" : sentiment === "negative" ? "Negative" : "Mixed";
+
+  const items: NewsArticle[] = articles && articles.length > 0
+    ? articles
+    : headlines.map(h => ({ title: h, description: "", source: "", date: "" }));
 
   return (
     <motion.div
@@ -41,24 +65,38 @@ export default function NewsHeadlines({ headlines, articles, sentiment }: NewsHe
       </div>
 
       <div className="divide-y divide-white/5">
-        {(articles && articles.length > 0 ? articles : headlines.map(h => ({ title: h, description: "", source: "", date: "" }))).map((item, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: i * 0.05 }}
-            className="px-4 py-3 hover:bg-white/5 transition-colors"
-          >
-            <p className="text-sm text-white/90 leading-snug">{item.title}</p>
-            {item.source && (
-              <div className="flex items-center gap-2 mt-1 text-xs text-white/40">
-                <span>{item.source}</span>
-                {item.date && <span>·</span>}
-                {item.date && <span>{new Date(item.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>}
+        {items.map((item, i) => {
+          const inner = (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.05 }}
+              className={`px-4 py-3 hover:bg-white/5 transition-colors flex items-center gap-3 ${item.url ? "cursor-pointer" : ""}`}
+            >
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-white/90 leading-snug">{item.title}</p>
+                {item.source && (
+                  <div className="flex items-center gap-2 mt-1 text-xs text-white/40">
+                    <span>{item.source}</span>
+                    {item.date && <span>·</span>}
+                    {item.date && <span>{new Date(item.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>}
+                  </div>
+                )}
               </div>
-            )}
-          </motion.div>
-        ))}
+              {item.image && <Thumbnail src={item.image} alt={item.title} />}
+            </motion.div>
+          );
+
+          if (item.url) {
+            return (
+              <a key={i} href={item.url} target="_blank" rel="noopener noreferrer" className="block">
+                {inner}
+              </a>
+            );
+          }
+          return inner;
+        })}
       </div>
     </motion.div>
   );
