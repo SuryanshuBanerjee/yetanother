@@ -12,7 +12,8 @@ import { Activity } from "lucide-react";
 import SearchWithSuggestions from "@/components/SearchWithSuggestions";
 import TrendComparison from "@/components/TrendComparison";
 import DecayLeaderboard from "@/components/DecayLeaderboard";
-import { GitCompare } from "lucide-react";
+import CampaignTrendSuggester from "@/components/CampaignTrendSuggester";
+import { GitCompare, Target } from "lucide-react";
 
 
 // Role mapping from quiz IDs to API role keys
@@ -35,6 +36,7 @@ function Dashboard() {
   const [currentStep, setCurrentStep] = useState<AnalysisStep | null>(null);
   const [completedSteps, setCompletedSteps] = useState<AnalysisStep[]>([]);
   const [showComparison, setShowComparison] = useState(false);
+  const [showCampaignFinder, setShowCampaignFinder] = useState(false);
 
   const dashboardRef = useRef<HTMLDivElement>(null);
 
@@ -200,6 +202,13 @@ function Dashboard() {
               <GitCompare className="w-3 h-3" />
               <span>Compare</span>
             </button>
+            <button
+              onClick={() => setShowCampaignFinder(true)}
+              className="flex items-center gap-1.5 px-3 py-1 rounded-lg border border-white/20 text-white/70 hover:bg-white/10 hover:border-white/40 transition-all"
+            >
+              <Target className="w-3 h-3" />
+              <span>Campaign</span>
+            </button>
           </div>
         </header>
 
@@ -273,6 +282,19 @@ function Dashboard() {
           <TrendComparison
             onClose={() => setShowComparison(false)}
             userRole={userRole}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Campaign Trend Finder Modal */}
+      <AnimatePresence>
+        {showCampaignFinder && (
+          <CampaignTrendSuggester
+            onClose={() => setShowCampaignFinder(false)}
+            onTrendSelect={(trend) => {
+              setShowCampaignFinder(false);
+              analyzeKeyword(trend);
+            }}
           />
         )}
       </AnimatePresence>
