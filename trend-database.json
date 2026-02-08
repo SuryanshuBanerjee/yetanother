@@ -1,5 +1,17 @@
 [
   {
+    "keyword": "2016 music",
+    "symbol": "#MUSIC",
+    "score": 35,
+    "change": 40,
+    "volume": "44.0K",
+    "risk": "high",
+    "category": "Unknown",
+    "phase": "Revival",
+    "lastSearched": "2026-02-08T04:47:58.029Z",
+    "searchCount": 4
+  },
+  {
     "keyword": "Pokémon Trainer Campus Battle",
     "symbol": "#PTCB",
     "score": 70,
@@ -14,14 +26,14 @@
   {
     "keyword": "pokemon",
     "symbol": "#POKEM",
-    "score": 50,
+    "score": 49,
     "change": 1,
-    "volume": "99.0K",
-    "risk": "medium",
+    "volume": "97.0K",
+    "risk": "high",
     "category": "Entertainment",
     "phase": "Saturation",
-    "lastSearched": "2026-02-08T04:42:43.182Z",
-    "searchCount": 9
+    "lastSearched": "2026-02-08T05:02:55.828Z",
+    "searchCount": 10
   },
   {
     "keyword": "Data Insight Drop (ELI5)",
@@ -82,18 +94,6 @@
     "phase": "Zombie",
     "lastSearched": "2026-02-08T03:27:59.386Z",
     "searchCount": 2
-  },
-  {
-    "keyword": "2016 music",
-    "symbol": "#MUSIC",
-    "score": 35,
-    "change": 40,
-    "volume": "44.0K",
-    "risk": "high",
-    "category": "Unknown",
-    "phase": "Revival",
-    "lastSearched": "2026-02-08T04:47:58.029Z",
-    "searchCount": 4
   },
   {
     "keyword": "Skibidi Toilet",

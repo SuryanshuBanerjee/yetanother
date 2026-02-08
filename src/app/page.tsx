@@ -13,6 +13,7 @@ import SearchWithSuggestions from "@/components/SearchWithSuggestions";
 import TrendComparison from "@/components/TrendComparison";
 import DecayLeaderboard from "@/components/DecayLeaderboard";
 import CampaignTrendSuggester from "@/components/CampaignTrendSuggester";
+import RainbowCorners from "@/components/RainbowCorners";
 import { GitCompare, Target } from "lucide-react";
 
 
@@ -178,11 +179,7 @@ function Dashboard() {
         transition={{ delay: 0.2, duration: 0.6 }}
         className="relative z-10 w-[95vw] max-w-7xl mx-auto my-6 min-h-[calc(100vh-3rem)] rounded-2xl overflow-hidden hud-container"
       >
-        {/* Corner Accents - Monochrome */}
-        <div className="absolute top-0 left-0 w-16 h-16 border-l-2 border-t-2 border-white/20 rounded-tl-2xl" />
-        <div className="absolute top-0 right-0 w-16 h-16 border-r-2 border-t-2 border-white/20 rounded-tr-2xl" />
-        <div className="absolute bottom-0 left-0 w-16 h-16 border-l-2 border-b-2 border-white/20 rounded-bl-2xl" />
-        <div className="absolute bottom-0 right-0 w-16 h-16 border-r-2 border-b-2 border-white/20 rounded-br-2xl" />
+        <RainbowCorners />
 
         {/* Header Bar */}
         <header className="flex justify-between items-center px-8 py-4 border-b border-white/10">

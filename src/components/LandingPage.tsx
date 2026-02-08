@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import RainbowCorners from "./RainbowCorners";
 
 interface LandingPageProps {
     onStart: () => void;
@@ -68,11 +69,7 @@ export default function LandingPage({ onStart }: LandingPageProps) {
                     border: "1px solid rgba(255, 255, 255, 0.1)",
                 }}
             >
-                {/* Corner Accents - Monochrome */}
-                <div className="absolute top-0 left-0 w-20 h-20 border-l-2 border-t-2 border-white/20 rounded-tl-2xl" />
-                <div className="absolute top-0 right-0 w-20 h-20 border-r-2 border-t-2 border-white/20 rounded-tr-2xl" />
-                <div className="absolute bottom-0 left-0 w-20 h-20 border-l-2 border-b-2 border-white/20 rounded-bl-2xl" />
-                <div className="absolute bottom-0 right-0 w-20 h-20 border-r-2 border-b-2 border-white/20 rounded-br-2xl" />
+                <RainbowCorners size="w-20 h-20" />
 
                 {/* Header Bar */}
                 <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-8 py-4 border-b border-white/10">
@@ -121,19 +118,19 @@ export default function LandingPage({ onStart }: LandingPageProps) {
                     </motion.p>
                 </div>
 
-                {/* Rotating Cube */}
+                {/* Rotating Cube - Original colors */}
                 <motion.div
-                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[20vw] max-w-[280px] opacity-20 pointer-events-none"
+                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[22vw] max-w-[300px] pointer-events-none"
+                    style={{ opacity: 0.4 }}
                     animate={{ rotate: 360 }}
                     transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
                 >
                     <Image
                         src="/cube.svg"
                         alt="Holographic Cube"
-                        width={280}
-                        height={280}
+                        width={300}
+                        height={300}
                         className="w-full h-auto"
-                        style={{ filter: "grayscale(100%) brightness(1.5)" }}
                         priority
                     />
                 </motion.div>

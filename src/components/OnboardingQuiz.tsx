@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Check } from "lucide-react";
+import RainbowCorners from "./RainbowCorners";
 
 interface QuizStep {
     id: string;
@@ -72,6 +73,23 @@ const steps: QuizStep[] = [
     },
 ];
 
+// Dark gradient backgrounds that shift per step
+const STEP_GRADIENTS = [
+    "radial-gradient(ellipse 120% 80% at 20% 80%, hsla(260, 60%, 15%, 0.8) 0%, transparent 60%), radial-gradient(ellipse 100% 60% at 80% 20%, hsla(200, 50%, 12%, 0.6) 0%, transparent 50%)",
+    "radial-gradient(ellipse 120% 80% at 80% 80%, hsla(320, 50%, 14%, 0.8) 0%, transparent 60%), radial-gradient(ellipse 100% 60% at 20% 20%, hsla(260, 50%, 12%, 0.6) 0%, transparent 50%)",
+    "radial-gradient(ellipse 120% 80% at 50% 90%, hsla(200, 60%, 14%, 0.8) 0%, transparent 60%), radial-gradient(ellipse 100% 60% at 50% 10%, hsla(160, 40%, 10%, 0.6) 0%, transparent 50%)",
+    "radial-gradient(ellipse 120% 80% at 30% 70%, hsla(160, 50%, 12%, 0.8) 0%, transparent 60%), radial-gradient(ellipse 100% 60% at 70% 30%, hsla(260, 50%, 14%, 0.6) 0%, transparent 50%)",
+    "radial-gradient(ellipse 120% 80% at 70% 80%, hsla(280, 55%, 15%, 0.8) 0%, transparent 60%), radial-gradient(ellipse 100% 60% at 30% 20%, hsla(200, 55%, 12%, 0.6) 0%, transparent 50%)",
+];
+
+const BUTTON_COLORS = [
+    "hsla(260, 55%, 45%, 1)",
+    "hsla(320, 45%, 40%, 1)",
+    "hsla(200, 55%, 40%, 1)",
+    "hsla(160, 45%, 35%, 1)",
+    "hsla(280, 50%, 42%, 1)",
+];
+
 interface OnboardingQuizProps {
     onComplete: (data: Record<string, string | string[]>) => void;
     onBack: () => void;
@@ -135,19 +153,28 @@ export default function OnboardingQuiz({ onComplete, onBack }: OnboardingQuizPro
             transition={{ duration: 0.5 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black"
         >
+            {/* Animated gradient background that shifts per step */}
+            <AnimatePresence mode="wait">
+                <motion.div
+                    key={currentStep}
+                    className="absolute inset-0"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.8 }}
+                    style={{ background: STEP_GRADIENTS[currentStep] }}
+                />
+            </AnimatePresence>
+
             {/* HUD Container */}
             <motion.div
                 className="relative w-[92vw] h-[88vh] rounded-2xl overflow-hidden"
                 style={{
-                    background: "rgba(10, 10, 10, 0.95)",
+                    background: "rgba(10, 10, 10, 0.7)",
                     border: "1px solid rgba(255, 255, 255, 0.1)",
                 }}
             >
-                {/* Corner Accents - Monochrome */}
-                <div className="absolute top-0 left-0 w-16 h-16 border-l-2 border-t-2 border-white/20 rounded-tl-2xl" />
-                <div className="absolute top-0 right-0 w-16 h-16 border-r-2 border-t-2 border-white/20 rounded-tr-2xl" />
-                <div className="absolute bottom-0 left-0 w-16 h-16 border-l-2 border-b-2 border-white/20 rounded-bl-2xl" />
-                <div className="absolute bottom-0 right-0 w-16 h-16 border-r-2 border-b-2 border-white/20 rounded-br-2xl" />
+                <RainbowCorners />
 
                 {/* Header with Progress */}
                 <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-8 py-4 border-b border-white/10">
@@ -162,9 +189,12 @@ export default function OnboardingQuiz({ onComplete, onBack }: OnboardingQuizPro
                     <div className="flex flex-col items-center gap-1">
                         <div className="w-40 h-1.5 bg-white/10 rounded-full overflow-hidden">
                             <motion.div
-                                className="h-full rounded-full bg-white"
+                                className="h-full rounded-full"
                                 initial={{ width: 0 }}
-                                animate={{ width: `${progress}%` }}
+                                animate={{
+                                    width: `${progress}%`,
+                                    backgroundColor: BUTTON_COLORS[currentStep],
+                                }}
                                 transition={{ duration: 0.5 }}
                             />
                         </div>
@@ -222,9 +252,10 @@ export default function OnboardingQuiz({ onComplete, onBack }: OnboardingQuizPro
                                                     whileHover={{ scale: 1.01 }}
                                                     whileTap={{ scale: 0.99 }}
                                                     className={`w-full p-4 rounded-xl text-left transition-all duration-200 border ${isSelected
-                                                            ? "bg-white/10 border-white/40"
+                                                            ? "border-white/40"
                                                             : "bg-white/5 border-white/10 hover:border-white/20"
                                                         }`}
+                                                    style={isSelected ? { background: `${BUTTON_COLORS[currentStep]}33` } : undefined}
                                                 >
                                                     <div className="flex items-center justify-between">
                                                         <div>
@@ -235,9 +266,10 @@ export default function OnboardingQuiz({ onComplete, onBack }: OnboardingQuizPro
                                                             <motion.div
                                                                 initial={{ scale: 0 }}
                                                                 animate={{ scale: 1 }}
-                                                                className="w-6 h-6 rounded-full flex items-center justify-center bg-white"
+                                                                className="w-6 h-6 rounded-full flex items-center justify-center"
+                                                                style={{ background: BUTTON_COLORS[currentStep] }}
                                                             >
-                                                                <Check className="w-4 h-4 text-black" />
+                                                                <Check className="w-4 h-4 text-white" />
                                                             </motion.div>
                                                         )}
                                                     </div>
@@ -259,9 +291,10 @@ export default function OnboardingQuiz({ onComplete, onBack }: OnboardingQuizPro
                                                     whileHover={{ scale: 1.03 }}
                                                     whileTap={{ scale: 0.97 }}
                                                     className={`flex items-center gap-2 px-5 py-3 rounded-full transition-all duration-200 border ${isSelected
-                                                            ? "bg-white/10 border-white/40"
+                                                            ? "border-white/40"
                                                             : "bg-white/5 border-white/10 hover:border-white/20"
                                                         }`}
+                                                    style={isSelected ? { background: `${BUTTON_COLORS[currentStep]}33` } : undefined}
                                                 >
                                                     <span className="text-white font-medium">{opt.title}</span>
                                                     {isSelected && <Check className="w-4 h-4 text-white" />}
@@ -278,9 +311,10 @@ export default function OnboardingQuiz({ onComplete, onBack }: OnboardingQuizPro
                                     whileHover={{ scale: isValid() ? 1.02 : 1 }}
                                     whileTap={{ scale: isValid() ? 0.98 : 1 }}
                                     className={`mt-10 px-10 py-4 rounded-xl font-semibold transition-all duration-300 ${isValid()
-                                            ? "bg-white text-black hover:bg-white/90"
+                                            ? "text-white"
                                             : "bg-white/10 text-white/30 cursor-not-allowed"
                                         }`}
+                                    style={isValid() ? { background: BUTTON_COLORS[currentStep] } : undefined}
                                 >
                                     {currentStep === steps.length - 1 ? "Complete" : "Continue"}
                                 </motion.button>
