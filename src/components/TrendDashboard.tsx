@@ -2,7 +2,8 @@
 
 import { ReactNode } from "react";
 import { motion } from "framer-motion";
-import { TrendingUp, TrendingDown, Download, Share2 } from "lucide-react";
+import { TrendingUp, TrendingDown, Share2 } from "lucide-react";
+import ExportButton from "./ExportButton";
 import CandlestickChart from "./CandlestickChart";
 import KeyMetrics from "./KeyMetrics";
 import ProsCons from "./ProsCons";
@@ -144,7 +145,9 @@ export default function TrendDashboard({ data, onRelatedTrendClick, userRole = "
     // Build section map — each section only renders if it has data
     const sectionMap: Record<SectionId, ReactNode> = {
         Chart: interestOverTime.length > 0 ? (
-            <CandlestickChart data={interestOverTime} keyword={keyword} userRole={userRole} aiExplanation={basicMetrics?.llmInterpretation} />
+            <div id="trend-chart-candlestick">
+                <CandlestickChart data={interestOverTime} keyword={keyword} userRole={userRole} aiExplanation={basicMetrics?.llmInterpretation} />
+            </div>
         ) : null,
 
         KeyMetrics: metrics ? (
@@ -175,7 +178,9 @@ export default function TrendDashboard({ data, onRelatedTrendClick, userRole = "
         ),
 
         Triade: advancedInferences?.trendTriade ? (
-            <TrendTriade trendTriade={advancedInferences.trendTriade} userRole={userRole} />
+            <div id="trend-chart-triade">
+                <TrendTriade trendTriade={advancedInferences.trendTriade} userRole={userRole} />
+            </div>
         ) : null,
 
         Velocity: (deltaVelocityNum != null || peakWidthNum != null || decayHalfLifeNum != null || advancedInferences?.regionalSkew) ? (
@@ -188,7 +193,9 @@ export default function TrendDashboard({ data, onRelatedTrendClick, userRole = "
         ) : null,
 
         MetricsHistory: metricsHistory && metricsHistory.length > 0 ? (
-            <MetricsHistoryChart metricsHistory={metricsHistory} userRole={userRole} />
+            <div id="trend-chart-metrics-history">
+                <MetricsHistoryChart metricsHistory={metricsHistory} userRole={userRole} />
+            </div>
         ) : null,
 
         About: summaryText ? (
@@ -275,9 +282,7 @@ export default function TrendDashboard({ data, onRelatedTrendClick, userRole = "
                     <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-sm transition-colors border border-white/10">
                         <Share2 className="w-4 h-4" /> Share
                     </button>
-                    <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-neon-blue/10 hover:bg-neon-blue/20 text-neon-blue text-sm transition-colors border border-neon-blue/30">
-                        <Download className="w-4 h-4" /> Export
-                    </button>
+                    <ExportButton data={data} userRole={userRole} />
                 </div>
             </motion.div>
 
