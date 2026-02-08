@@ -387,7 +387,7 @@ export async function POST(req: NextRequest) {
             : (() => {
                 const ci = currentInterestFallback;
                 const wow = wowFallback;
-                const verdictVal = ci > 70 && wow > 5 ? "BUY" : ci > 50 ? "HOLD" : "WATCH";
+                const verdictVal = ci > 70 && wow > 5 ? "NOT ANYTIME SOON" : ci > 50 ? "INEVITABLE DECLINE" : "DECLINING";
                 const category = (validation.category as string) || "Trending";
                 const firstHeadline = newsResult.headlines[0] || "";
                 const platformPrimary = platforms?.[0] || "social media";

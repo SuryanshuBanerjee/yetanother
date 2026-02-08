@@ -18,31 +18,27 @@ interface ProsConsProps {
     summary?: string;
 }
 
-// Role-specific verdict explanations
+// Role-specific verdict explanations (decline-prediction framing)
 const VERDICT_EXPLANATIONS: Record<string, Record<string, string>> = {
     "content-creator": {
-        BUY: "Create content NOW — high engagement potential and growing audience interest. Early adoption = maximum reach.",
-        SELL: "Stop creating content about this — you'll get poor reach and may lose audience trust by jumping on a dead trend.",
-        HOLD: "Wait and watch — not the right moment yet. Build drafts but don't publish until momentum shifts.",
-        WATCH: "Keep monitoring — this could go viral or crash. Prepare content but wait for clearer signals.",
+        "NOT ANYTIME SOON": "No decline signals detected — this trend has strong momentum. Create content now for maximum reach.",
+        "DECLINING": "This trend is actively losing momentum — engagement is dropping. Pivot to fresher topics before audience trust erodes.",
+        "INEVITABLE DECLINE": "Early decline signals detected — reduced engagement, content saturation building. Prepare exit strategy and draft alternative content.",
     },
     "marketing-team": {
-        BUY: "Green light for campaigns — strong ROI potential if you act NOW. Budget allocation recommended.",
-        SELL: "Pull any active campaigns — risk of wasted spend and negative brand association. Redirect budget.",
-        HOLD: "Don't commit budget yet — wait for trend direction to confirm. Keep creatives ready.",
-        WATCH: "Reserve budget but don't deploy — monitor for 1-2 weeks before committing spend.",
+        "NOT ANYTIME SOON": "No decline signals — strong ROI potential remains. Safe to commit campaign budget.",
+        "DECLINING": "Trend is in active decline — pull campaigns to avoid wasted spend and negative brand association. Redirect budget now.",
+        "INEVITABLE DECLINE": "Decline is approaching — audience fatigue and saturation signals emerging. Don't commit new budget; prepare to wind down.",
     },
     "platform-moderator": {
-        BUY: "Amplify this trend — high engagement, low risk. Will drive positive platform metrics.",
-        SELL: "Consider suppressing or de-ranking — potential moderation issues or community backlash incoming.",
-        HOLD: "Let it run organically — don't actively promote but don't suppress either.",
-        WATCH: "Flag for monitoring — potential for viral surge or controversy. Prepare moderation resources.",
+        "NOT ANYTIME SOON": "Trend is healthy with high engagement and low risk — amplify for positive platform metrics.",
+        "DECLINING": "Trend is collapsing — expect reduced engagement, potential backlash. Prepare moderation resources for exit phase.",
+        "INEVITABLE DECLINE": "Decline signals building — influencer disengagement, content saturation detected. Monitor for algorithmic de-ranking needs.",
     },
     "general-user": {
-        BUY: "This trend is worth your attention — it's going somewhere interesting. Worth exploring now.",
-        SELL: "This trend is dying or becoming problematic — move on to something new and fresh.",
-        HOLD: "Interesting but uncertain — keep an eye on it. Check back in a few days.",
-        WATCH: "Developing situation — could go either way. Worth occasional monitoring.",
+        "NOT ANYTIME SOON": "This trend shows no signs of slowing down — strong engagement, fresh content, and growing interest.",
+        "DECLINING": "This trend is actively dying — engagement dropping, audience moving on. Look for what's next.",
+        "INEVITABLE DECLINE": "Decline is on the horizon — early warning signs like audience fatigue and content repetition are emerging.",
     },
 };
 
@@ -63,21 +59,19 @@ interface ProsConsFullProps extends ProsConsProps {
 export default function ProsCons({ pros = [], cons = [], verdict, confidence, userRole = "general-user", summary, hasActionItems }: ProsConsFullProps) {
     const getVerdictColor = (v: string) => {
         switch (v?.toUpperCase()) {
-            case "BUY":
+            case "NOT ANYTIME SOON":
                 return "text-green-400 border-green-400/30 bg-green-400/10";
-            case "SELL":
+            case "DECLINING":
                 return "text-red-400 border-red-400/30 bg-red-400/10";
-            case "HOLD":
+            case "INEVITABLE DECLINE":
                 return "text-yellow-400 border-yellow-400/30 bg-yellow-400/10";
-            case "WATCH":
-                return "text-neon-blue border-neon-blue/30 bg-neon-blue/10";
             default:
                 return "text-white/60 border-white/10 bg-white/5";
         }
     };
 
     const verdictExplanation = VERDICT_EXPLANATIONS[userRole]?.[verdict?.toUpperCase() || ""]
-        || VERDICT_EXPLANATIONS["general-user"][verdict?.toUpperCase() || "WATCH"]
+        || VERDICT_EXPLANATIONS["general-user"][verdict?.toUpperCase() || "INEVITABLE DECLINE"]
         || "";
 
     return (
@@ -132,12 +126,12 @@ export default function ProsCons({ pros = [], cons = [], verdict, confidence, us
                 >
                     <div className="px-4 py-3 border-b border-green-500/20 flex items-center gap-2">
                         <CheckCircle className="w-5 h-5 text-green-400" />
-                        <span className="font-bold text-green-400">Why It Might Rise</span>
-                        <span className="text-xs text-green-400/50 ml-auto">Bullish Signals</span>
+                        <span className="font-bold text-green-400">Why It May Sustain</span>
+                        <span className="text-xs text-green-400/50 ml-auto">Resilience Signals</span>
                     </div>
                     <div className="p-4 space-y-3">
                         {pros.length === 0 ? (
-                            <p className="text-white/40 text-sm">No bullish signals identified</p>
+                            <p className="text-white/40 text-sm">No resilience signals identified</p>
                         ) : (
                             pros.map((pro, i) => (
                                 <motion.div
@@ -176,12 +170,12 @@ export default function ProsCons({ pros = [], cons = [], verdict, confidence, us
                 >
                     <div className="px-4 py-3 border-b border-red-500/20 flex items-center gap-2">
                         <XCircle className="w-5 h-5 text-red-400" />
-                        <span className="font-bold text-red-400">Why It Might Fall</span>
-                        <span className="text-xs text-red-400/50 ml-auto">Bearish Signals</span>
+                        <span className="font-bold text-red-400">Decline Signals</span>
+                        <span className="text-xs text-red-400/50 ml-auto">Decay Indicators</span>
                     </div>
                     <div className="p-4 space-y-3">
                         {cons.length === 0 ? (
-                            <p className="text-white/40 text-sm">No bearish signals identified</p>
+                            <p className="text-white/40 text-sm">No decline signals identified</p>
                         ) : (
                             cons.map((con, i) => (
                                 <motion.div
@@ -224,10 +218,9 @@ export default function ProsCons({ pros = [], cons = [], verdict, confidence, us
                     <span className="text-xs text-white/30 uppercase tracking-wider">Understanding Our Metrics</span>
                 </div>
                 <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-white/40">
-                    <span><strong className="text-white/60">BUY</strong> = Engage with trend</span>
-                    <span><strong className="text-white/60">SELL</strong> = Avoid trend</span>
-                    <span><strong className="text-white/60">HOLD</strong> = Wait for clarity</span>
-                    <span><strong className="text-white/60">WATCH</strong> = Monitor closely</span>
+                    <span><strong className="text-green-400/80">NOT ANYTIME SOON</strong> = No decline signals</span>
+                    <span><strong className="text-yellow-400/80">INEVITABLE DECLINE</strong> = Decline approaching</span>
+                    <span><strong className="text-red-400/80">DECLINING</strong> = Actively losing momentum</span>
                 </div>
             </motion.div>
         </div>

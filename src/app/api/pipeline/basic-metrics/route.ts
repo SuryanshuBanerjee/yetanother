@@ -307,14 +307,15 @@ export async function POST(req: NextRequest) {
         const interpretationMessages: Array<{ role: "system" | "user"; content: string }> = [
             {
                 role: "system",
-                content: `You are TREND PRISM's trend backgrounder and metrics interpreter.
+                content: `You are TREND PRISM's trend decline analyst and metrics interpreter.
 
 ${roleContext}
 
-IMPORTANT: Start with 1-2 sentences explaining WHAT this trend is and WHY it's trending right now. Include the real-world event, person, product, or topic driving this trend. This is the most important part — the user needs context about what they're looking at.
+IMPORTANT: Start with 1-2 sentences explaining WHAT this trend is and WHY it's trending. Include the real-world event, person, product, or topic driving this trend.
 
-Then follow with 2-3 sentences of sharp, data-driven interpretation of the metrics.
-If the data seems sparse or generic (e.g. flat 100s, no regions), USE YOUR INTERNAL KNOWLEDGE about "${keyword}" to fill in the context.
+Then follow with 2-3 sentences analyzing DECLINE SIGNALS: Is engagement dropping? Is content becoming saturated? Are influencers disengaging? Is audience fatigue setting in? Are there algorithmic shifts reducing visibility? Focus on the trend's lifecycle position and what early warning signs of decline are (or aren't) present.
+
+If the data seems sparse or generic (e.g. flat 100s, no regions), USE YOUR INTERNAL KNOWLEDGE about "${keyword}" to fill in context about its decline trajectory.
 
 Keep it to 4-5 sentences total. Be direct and informative.
 Sound intelligent but speak simply — no fluff, no hedging.`

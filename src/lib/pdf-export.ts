@@ -150,7 +150,7 @@ export async function generateTrendReport(
   const verd = data.verdict;
   const category = data.validation?.category || "General";
   const phase = adv?.phase || data.phase || "Unknown";
-  const verdictText = verd?.verdict || (data.healthScore && data.healthScore > 60 ? "BUY" : data.healthScore && data.healthScore > 40 ? "HOLD" : "WATCH");
+  const verdictText = verd?.verdict || (data.healthScore && data.healthScore > 60 ? "NOT ANYTIME SOON" : data.healthScore && data.healthScore > 40 ? "INEVITABLE DECLINE" : "DECLINING");
 
   let y = 20;
 
@@ -182,11 +182,11 @@ export async function generateTrendReport(
 
   // Verdict badge
   const badgeColor: Record<string, [number, number, number]> = {
-    BUY: [16, 185, 129],
-    HOLD: [245, 158, 11],
-    WATCH: [239, 68, 68],
+    "NOT ANYTIME SOON": [16, 185, 129],
+    "INEVITABLE DECLINE": [245, 158, 11],
+    "DECLINING": [239, 68, 68],
   };
-  const bc = badgeColor[verdictText.toUpperCase()] || badgeColor.HOLD;
+  const bc = badgeColor[verdictText.toUpperCase()] || badgeColor["INEVITABLE DECLINE"];
   const badgeX = MARGIN + doc.getTextWidth(data.keyword) + 6;
   doc.setFillColor(...bc);
   doc.roundedRect(badgeX, y - 6, doc.getTextWidth(verdictText.toUpperCase()) + 10, 9, 2, 2, "F");

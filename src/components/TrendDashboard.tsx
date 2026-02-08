@@ -136,7 +136,7 @@ export default function TrendDashboard({ data, onRelatedTrendClick, userRole = "
         : advancedInferences.decayHalfLife;
     const isUp = weekChange >= 0;
 
-    const verdictText = verdict?.verdict || (data.healthScore && data.healthScore > 60 ? "BUY" : data.healthScore && data.healthScore > 40 ? "HOLD" : "WATCH");
+    const verdictText = verdict?.verdict || (data.healthScore && data.healthScore > 60 ? "NOT ANYTIME SOON" : data.healthScore && data.healthScore > 40 ? "INEVITABLE DECLINE" : "DECLINING");
     const summaryText = basicMetrics?.llmInterpretation || advancedInferences?.llmAnalysis || data.summary || verdict?.summary || "";
     const deepAnalysis = advancedInferences?.llmAnalysis && verdict?.summary && advancedInferences.llmAnalysis !== verdict.summary
         ? advancedInferences.llmAnalysis

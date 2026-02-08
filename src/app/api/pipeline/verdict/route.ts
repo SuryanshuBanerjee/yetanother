@@ -18,27 +18,23 @@ export async function POST(req: NextRequest) {
             ? `\nThe user is active on ${platforms.join(", ")}. Generate platform-specific pros, cons, and action items for these platforms.`
             : "";
 
-        // Build role-specific framing
+        // Build role-specific framing (decline-prediction focus)
         const verdictFraming: Record<string, string> = {
-            "content-creator": `"BUY" = Yes, create content about this NOW — high engagement potential.
-"HOLD" = Wait and watch — not the right moment yet but could be soon.
-"SELL" = Stop making content about this — you'll lose audience trust or get no reach.
-"WATCH" = Keep monitoring — could go either way in the next few days.`,
+            "content-creator": `"NOT ANYTIME SOON" = No decline signals — this trend has strong momentum. Create content now for maximum reach.
+"INEVITABLE DECLINE" = Early decline signals detected — audience fatigue, content saturation building. Prepare exit strategy.
+"DECLINING" = This trend is actively losing momentum — engagement dropping. Pivot to fresher topics.`,
 
-            "general-user": `"BUY" = This trend is worth your attention — it's going somewhere interesting.
-"HOLD" = Interesting but uncertain — keep an eye on it.
-"SELL" = This trend is dying or problematic — move on to something new.
-"WATCH" = Developing situation — check back in a few days.`,
+            "general-user": `"NOT ANYTIME SOON" = No signs of slowing — strong engagement, fresh content, growing interest.
+"INEVITABLE DECLINE" = Decline is on the horizon — early warning signs like audience fatigue and repetition emerging.
+"DECLINING" = This trend is actively dying — engagement dropping, audience moving on.`,
 
-            "marketing-team": `"BUY" = Green light for campaigns — strong ROI potential if you act NOW.
-"HOLD" = Don't commit budget yet — wait for the trend to stabilize or confirm direction.
-"SELL" = Pull any active campaigns — risk of negative association or wasted spend.
-"WATCH" = Reserve budget but don't deploy — monitor for the next 1-2 weeks.`,
+            "marketing-team": `"NOT ANYTIME SOON" = No decline signals — safe to commit campaign budget, strong ROI potential.
+"INEVITABLE DECLINE" = Decline approaching — audience fatigue and saturation signals emerging. Don't commit new budget.
+"DECLINING" = Trend in active decline — pull campaigns to avoid wasted spend. Redirect budget now.`,
 
-            "platform-moderator": `"BUY" = Amplify this trend — high engagement, low risk, will drive platform metrics.
-"HOLD" = Don't actively promote but don't suppress — let it run organically.
-"SELL" = Consider suppressing or de-ranking — could cause moderation issues or backlash.
-"WATCH" = Flag for monitoring — potential for viral surge or controversy.`,
+            "platform-moderator": `"NOT ANYTIME SOON" = Trend is healthy — high engagement, low risk, amplify for platform metrics.
+"INEVITABLE DECLINE" = Decline signals building — influencer disengagement, content saturation. Monitor for de-ranking.
+"DECLINING" = Trend collapsing — reduced engagement, potential backlash. Prepare moderation resources.`,
         };
 
         // Try Gemini first, then Featherless, then Groq
@@ -61,7 +57,7 @@ export async function POST(req: NextRequest) {
             [
                 {
                     role: "system",
-                    content: `You are TREND PRISM's Verdict Engine — the final decision-maker that tells users whether to "buy" or "sell" a trend.
+                    content: `You are TREND PRISM's Decline Prediction Engine — the final decision-maker that predicts when and why social media trends begin to lose momentum and collapse.
 
 ${roleContext}
 
@@ -85,9 +81,9 @@ You MUST respond in valid JSON with this EXACT structure (no markdown, no code b
       "impact": <0-100, how significant this con is>
     }
   ],
-  "verdict": "<BUY|SELL|HOLD|WATCH>",
+  "verdict": "<NOT ANYTIME SOON|INEVITABLE DECLINE|DECLINING>",
   "confidence": <0-100>,
-  "summary": "<3-4 sentence final verdict. Be decisive, specific, and directly useful. Include a specific recommended action and timeframe. Sound like a brilliant advisor who doesn't waste words.>",
+  "summary": "<3-4 sentence decline prediction. Focus on whether and why the trend will decline, what signals drive it, and recommended actions. Be decisive, specific, and directly useful.>",
   "timeHorizon": "<specific timeframe: '24-48 hours', '1-2 weeks', '2-4 weeks', '1-3 months'>",
   "actionItems": [
     "<specific action 1, role-targeted>",
@@ -100,14 +96,16 @@ You MUST respond in valid JSON with this EXACT structure (no markdown, no code b
 
 RULES:
 - Always give 3-5 pros and 3-5 cons
-- Generate pros/cons that are SPECIFIC to this trend — reference real entities, events, or data. Do NOT say generic things like "has search interest" or "topic recognition". Instead say things like "TikTok engagement on #keyword averaging 2M views" or "Associated with [real event], driving news cycle".
-- Each action item must be concrete and platform-specific. Instead of "Monitor keyword daily", say "Create a TikTok duet with the top viral video about [keyword] within 24 hours".
+- Frame pros as RESILIENCE signals (why the trend may sustain) and cons as DECLINE signals (why it's losing momentum)
+- Generate pros/cons that are SPECIFIC to this trend — reference real entities, events, or data. Do NOT say generic things like "has search interest". Instead reference specific engagement metrics, influencer activity, content saturation levels, or audience fatigue indicators.
+- Each action item must be concrete and platform-specific. Instead of "Monitor keyword daily", say "Track engagement rate on top ${keyword} posts over the next 48 hours for decline signals".
 - Be DECISIVE — don't hedge. Pick a verdict and commit to it
 - Make every sentence useful for the user's specific role
-- The summary should feel like advice from the smartest person in the room
-- CRITICAL: If current interest is 80+/100 AND week-over-week growth is strongly positive (>10%), lean toward BUY unless there are severe safety/brand risks
-- If the trend is a major news story with high search volume, it is almost always a BUY for content creators and a WATCH/BUY for others
-- Use the news headlines and trend background below to inform your verdict — real-world context matters more than abstract risk scores`
+- Focus on DECLINE PREDICTION: identify early decline signals including reduced engagement, influencer disengagement, algorithmic shifts, content saturation, and audience fatigue
+- CRITICAL: If current interest is 80+/100 AND week-over-week growth is strongly positive (>10%), lean toward "NOT ANYTIME SOON" unless there are severe saturation/fatigue signals
+- If the trend shows dropping engagement, high content saturation, or influencer exit, lean toward "DECLINING"
+- If early warning signs are present but momentum hasn't broken yet, use "INEVITABLE DECLINE"
+- Use the news headlines and trend background to identify real-world decline drivers — context matters more than abstract risk scores`
                 },
                 {
                     role: "user",
@@ -196,30 +194,29 @@ function buildFallbackVerdict(
     const phase = (inferences.phase as string) || "Unknown";
 
     let verdict: string;
-    if (risk < 30) verdict = "BUY";
-    else if (risk < 50) verdict = "HOLD";
-    else if (risk < 70) verdict = "WATCH";
-    else verdict = "SELL";
+    if (risk < 30) verdict = "NOT ANYTIME SOON";
+    else if (risk < 60) verdict = "INEVITABLE DECLINE";
+    else verdict = "DECLINING";
 
     return {
         pros: [
-            { title: "Still has search interest", detail: `"${keyword}" maintains active search volume.`, impact: 60 },
-            { title: "Topic recognition", detail: "The trend has established cultural recognition.", impact: 50 },
-            { title: "Niche potential remains", detail: "Smaller communities may still find value.", impact: 40 },
+            { title: "Active search volume", detail: `"${keyword}" still maintains search interest, suggesting audience hasn't fully moved on.`, impact: 60 },
+            { title: "Cultural recognition", detail: "The trend has established recognition — not yet in audience fatigue territory.", impact: 50 },
+            { title: "Niche resilience", detail: "Smaller communities may sustain engagement even as mainstream interest fades.", impact: 40 },
         ],
         cons: [
-            { title: "Risk score elevated", detail: `Overall risk at ${risk}/100 suggests caution.`, impact: risk },
-            { title: "Phase uncertainty", detail: `Currently in ${phase} phase.`, impact: 55 },
-            { title: "Market timing risk", detail: "Optimal window may have passed.", impact: 50 },
+            { title: "Decline risk elevated", detail: `Overall decline risk at ${risk}/100 — early signs of momentum loss.`, impact: risk },
+            { title: `${phase} phase signals`, detail: `Currently in ${phase} phase — ${risk > 50 ? "content saturation and audience fatigue likely" : "watch for engagement drops"}.`, impact: 55 },
+            { title: "Window narrowing", detail: "Optimal engagement window may be closing as the trend lifecycle progresses.", impact: 50 },
         ],
         verdict,
         confidence: Math.round(100 - risk * 0.3),
-        summary: `Based on available data, "${keyword}" receives a ${verdict} rating with ${Math.round(100 - risk * 0.3)}% confidence.`,
+        summary: `"${keyword}" shows a ${verdict.toLowerCase()} decline prediction with ${Math.round(100 - risk * 0.3)}% confidence. ${risk > 50 ? "Early decline signals detected — reduced engagement and content saturation are building." : "No strong decline signals yet, but monitoring recommended."}`,
         timeHorizon: risk > 60 ? "24-48 hours" : "1-2 weeks",
         actionItems: [
-            `Monitor ${keyword} trends daily`,
-            "Watch for sentiment shifts",
-            "Prepare contingency strategies",
+            `Track engagement rate on ${keyword} content for decline signals`,
+            "Monitor influencer activity — disengagement is an early collapse indicator",
+            "Watch for content saturation and audience fatigue patterns",
         ],
         riskLevel: risk > 70 ? "Critical" : risk > 50 ? "High" : risk > 30 ? "Medium" : "Low",
         opportunityWindow: risk > 60 ? "Closing rapidly" : "1-2 weeks",
