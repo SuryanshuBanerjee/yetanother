@@ -71,7 +71,7 @@ export default function Simulator({ initialProbability }: { initialProbability: 
                         <motion.div
                             key={simulatedProb}
                             initial={{ scale: 1.2, color: "#fff" }}
-                            animate={{ scale: 1, color: simulatedProb > 50 ? "#ff2a6d" : "#39ff14" }}
+                            animate={{ scale: 1, color: simulatedProb > 50 ? "#ff2a6d" : "#ffffff" }}
                             className="text-5xl font-bold font-mono"
                         >
                             {simulatedProb}%

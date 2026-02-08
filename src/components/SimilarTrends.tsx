@@ -85,7 +85,7 @@ export default function SimilarTrends({ trends = [], rising = [], onTrendClick, 
                                                 </span>
                                             )}
                                             {isBreakout && (
-                                                <span className="px-1.5 py-0.5 text-[10px] rounded bg-purple-500/20 text-purple-400 font-mono">
+                                                <span className="px-1.5 py-0.5 text-[10px] rounded bg-white/50/20 text-white/70 font-mono">
                                                     BREAKOUT
                                                 </span>
                                             )}

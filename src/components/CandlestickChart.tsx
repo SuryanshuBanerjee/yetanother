@@ -75,7 +75,7 @@ export default function CandlestickChart({ data, keyword, userRole = "general-us
                         <span className="text-white/50">7-Day MA</span>
                     </span>
                     <span className="flex items-center gap-2">
-                        <div className="w-3 h-0.5 bg-purple-400" />
+                        <div className="w-3 h-0.5 bg-white/70" />
                         <span className="text-white/50">30-Day MA</span>
                     </span>
                 </div>
@@ -115,7 +115,7 @@ export default function CandlestickChart({ data, keyword, userRole = "general-us
                                     className="flex-1 rounded-t-sm relative group"
                                     style={{
                                         background: barIsUp
-                                            ? "linear-gradient(180deg, #00f0ff 0%, #00f0ff40 100%)"
+                                            ? "linear-gradient(180deg, #ffffff 0%, #ffffff40 100%)"
                                             : "linear-gradient(180deg, #ff2a6d 0%, #ff2a6d40 100%)",
                                         minWidth: "4px",
                                     }}
@@ -136,7 +136,7 @@ export default function CandlestickChart({ data, keyword, userRole = "general-us
                     <svg className="absolute inset-0 pointer-events-none overflow-visible">
                         <polyline
                             fill="none"
-                            stroke="#00f0ff"
+                            stroke="#ffffff"
                             strokeWidth="2"
                             strokeLinecap="round"
                             strokeLinejoin="round"
@@ -187,7 +187,7 @@ export default function CandlestickChart({ data, keyword, userRole = "general-us
                 </div>
                 <div>
                     <span className="text-white/50">30D Avg: </span>
-                    <span className="font-bold text-purple-400">{Math.round(ma30[ma30.length - 1] || 0)}</span>
+                    <span className="font-bold text-white/70">{Math.round(ma30[ma30.length - 1] || 0)}</span>
                 </div>
             </div>
 

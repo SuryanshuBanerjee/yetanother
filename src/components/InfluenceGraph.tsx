@@ -11,7 +11,7 @@ const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 export default function InfluenceGraph({ creators }: { creators: Creator[] }) {
     // Mapper for status colors
     const statusColors = {
-        Active: "#00f0ff",     // Neon Blue
+        Active: "#ffffff",     // Neon Blue
         Declining: "#ff2a6d", // Decay Red
         Left: "#888888"       // Grey
     };

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Check } from "lucide-react";
 
@@ -39,11 +39,11 @@ const steps: QuizStep[] = [
         subtitle: "Select all that apply",
         type: "multi-select",
         options: [
-            { id: "tiktok", title: "TikTok", color: "#00f2ea" },
-            { id: "instagram", title: "Instagram", color: "#e1306c" },
-            { id: "twitter", title: "X", color: "#1da1f2" },
-            { id: "youtube", title: "YouTube", color: "#ff0000" },
-            { id: "linkedin", title: "LinkedIn", color: "#0077b5" },
+            { id: "tiktok", title: "TikTok", color: "#ffffff" },
+            { id: "instagram", title: "Instagram", color: "#ffffff" },
+            { id: "twitter", title: "X", color: "#ffffff" },
+            { id: "youtube", title: "YouTube", color: "#ffffff" },
+            { id: "linkedin", title: "LinkedIn", color: "#ffffff" },
         ],
     },
     {
@@ -90,15 +90,6 @@ export default function OnboardingQuiz({ onComplete, onBack }: OnboardingQuizPro
     const step = steps[currentStep];
     const progress = ((currentStep + 1) / steps.length) * 100;
 
-    // Color evolution based on progress (Restored Vibe)
-    const gradientColors = useMemo(() => {
-        const hueShift = (currentStep / (steps.length - 1)) * 60; // 0 to 60 degree shift
-        return {
-            primary: `hsl(${180 + hueShift}, 100%, 50%)`, // Cyan to Purple
-            secondary: `hsl(${280 - hueShift}, 100%, 50%)`, // Purple to Blue
-        };
-    }, [currentStep]);
-
     const isValid = () => {
         const value = formData[step.id];
         if (step.type === "text") return (value as string).trim().length > 0;
@@ -142,48 +133,21 @@ export default function OnboardingQuiz({ onComplete, onBack }: OnboardingQuizPro
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, scale: 0.98 }}
             transition={{ duration: 0.5 }}
-            className="fixed inset-0 z-50 flex items-center justify-center"
-            style={{
-                background: `linear-gradient(135deg, 
-          ${gradientColors.primary}20 0%, 
-          rgba(5, 5, 5, 1) 35%,
-          rgba(5, 5, 5, 1) 65%,
-          ${gradientColors.secondary}20 100%
-        )`,
-                transition: "background 0.5s ease",
-            }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black"
         >
-            {/* Grain Overlay */}
-            <div className="grain-overlay fixed inset-0 pointer-events-none z-[100]" />
-
             {/* HUD Container */}
             <motion.div
                 className="relative w-[92vw] h-[88vh] rounded-2xl overflow-hidden"
                 style={{
-                    background: "linear-gradient(135deg, rgba(0, 0, 0, 0.7), rgba(15, 15, 25, 0.5))",
-                    backdropFilter: "blur(20px)",
-                    border: `1px solid ${gradientColors.primary}40`,
-                    boxShadow: `0 0 60px ${gradientColors.primary}10, 0 0 120px ${gradientColors.secondary}05`,
-                    transition: "border-color 0.5s, box-shadow 0.5s",
+                    background: "rgba(10, 10, 10, 0.95)",
+                    border: "1px solid rgba(255, 255, 255, 0.1)",
                 }}
             >
-                {/* Corner Accents - Colors evolve */}
-                <div
-                    className="absolute top-0 left-0 w-16 h-16 border-l-2 border-t-2 rounded-tl-2xl transition-colors duration-500"
-                    style={{ borderColor: gradientColors.primary }}
-                />
-                <div
-                    className="absolute top-0 right-0 w-16 h-16 border-r-2 border-t-2 rounded-tr-2xl transition-colors duration-500"
-                    style={{ borderColor: gradientColors.secondary }}
-                />
-                <div
-                    className="absolute bottom-0 left-0 w-16 h-16 border-l-2 border-b-2 rounded-bl-2xl transition-colors duration-500"
-                    style={{ borderColor: gradientColors.secondary }}
-                />
-                <div
-                    className="absolute bottom-0 right-0 w-16 h-16 border-r-2 border-b-2 rounded-br-2xl transition-colors duration-500"
-                    style={{ borderColor: gradientColors.primary }}
-                />
+                {/* Corner Accents - Monochrome */}
+                <div className="absolute top-0 left-0 w-16 h-16 border-l-2 border-t-2 border-white/20 rounded-tl-2xl" />
+                <div className="absolute top-0 right-0 w-16 h-16 border-r-2 border-t-2 border-white/20 rounded-tr-2xl" />
+                <div className="absolute bottom-0 left-0 w-16 h-16 border-l-2 border-b-2 border-white/20 rounded-bl-2xl" />
+                <div className="absolute bottom-0 right-0 w-16 h-16 border-r-2 border-b-2 border-white/20 rounded-br-2xl" />
 
                 {/* Header with Progress */}
                 <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-8 py-4 border-b border-white/10">
@@ -198,8 +162,7 @@ export default function OnboardingQuiz({ onComplete, onBack }: OnboardingQuizPro
                     <div className="flex flex-col items-center gap-1">
                         <div className="w-40 h-1.5 bg-white/10 rounded-full overflow-hidden">
                             <motion.div
-                                className="h-full rounded-full"
-                                style={{ background: `linear-gradient(90deg, ${gradientColors.primary}, ${gradientColors.secondary})` }}
+                                className="h-full rounded-full bg-white"
                                 initial={{ width: 0 }}
                                 animate={{ width: `${progress}%` }}
                                 transition={{ duration: 0.5 }}
@@ -243,8 +206,7 @@ export default function OnboardingQuiz({ onComplete, onBack }: OnboardingQuizPro
                                                 handleNext();
                                             }
                                         }}
-                                        className="w-full bg-transparent border-b-2 py-3 text-2xl text-white text-center outline-none transition-colors placeholder:text-white/20"
-                                        style={{ borderColor: `${gradientColors.primary}60` }}
+                                        className="w-full bg-transparent border-b-2 border-white/30 py-3 text-2xl text-white text-center outline-none transition-colors placeholder:text-white/20 focus:border-white/60"
                                     />
                                 )}
 
@@ -259,11 +221,10 @@ export default function OnboardingQuiz({ onComplete, onBack }: OnboardingQuizPro
                                                     onClick={() => handleSelect(opt.id)}
                                                     whileHover={{ scale: 1.01 }}
                                                     whileTap={{ scale: 0.99 }}
-                                                    className="w-full p-4 rounded-xl text-left transition-all duration-200 border"
-                                                    style={{
-                                                        background: isSelected ? `${gradientColors.primary}15` : "rgba(255,255,255,0.03)",
-                                                        borderColor: isSelected ? gradientColors.primary : "rgba(255,255,255,0.08)",
-                                                    }}
+                                                    className={`w-full p-4 rounded-xl text-left transition-all duration-200 border ${isSelected
+                                                            ? "bg-white/10 border-white/40"
+                                                            : "bg-white/5 border-white/10 hover:border-white/20"
+                                                        }`}
                                                 >
                                                     <div className="flex items-center justify-between">
                                                         <div>
@@ -274,8 +235,7 @@ export default function OnboardingQuiz({ onComplete, onBack }: OnboardingQuizPro
                                                             <motion.div
                                                                 initial={{ scale: 0 }}
                                                                 animate={{ scale: 1 }}
-                                                                className="w-6 h-6 rounded-full flex items-center justify-center"
-                                                                style={{ background: gradientColors.primary }}
+                                                                className="w-6 h-6 rounded-full flex items-center justify-center bg-white"
                                                             >
                                                                 <Check className="w-4 h-4 text-black" />
                                                             </motion.div>
@@ -298,18 +258,13 @@ export default function OnboardingQuiz({ onComplete, onBack }: OnboardingQuizPro
                                                     onClick={() => handleSelect(opt.id)}
                                                     whileHover={{ scale: 1.03 }}
                                                     whileTap={{ scale: 0.97 }}
-                                                    className="flex items-center gap-2 px-5 py-3 rounded-full transition-all duration-200 border"
-                                                    style={{
-                                                        background: isSelected ? `${opt.color}20` : "rgba(255,255,255,0.03)",
-                                                        borderColor: isSelected ? opt.color : "rgba(255,255,255,0.08)",
-                                                    }}
+                                                    className={`flex items-center gap-2 px-5 py-3 rounded-full transition-all duration-200 border ${isSelected
+                                                            ? "bg-white/10 border-white/40"
+                                                            : "bg-white/5 border-white/10 hover:border-white/20"
+                                                        }`}
                                                 >
-                                                    <span
-                                                        className="w-2 h-2 rounded-full"
-                                                        style={{ backgroundColor: opt.color }}
-                                                    />
                                                     <span className="text-white font-medium">{opt.title}</span>
-                                                    {isSelected && <Check className="w-4 h-4" style={{ color: opt.color }} />}
+                                                    {isSelected && <Check className="w-4 h-4 text-white" />}
                                                 </motion.button>
                                             );
                                         })}
@@ -322,13 +277,10 @@ export default function OnboardingQuiz({ onComplete, onBack }: OnboardingQuizPro
                                     disabled={!isValid()}
                                     whileHover={{ scale: isValid() ? 1.02 : 1 }}
                                     whileTap={{ scale: isValid() ? 0.98 : 1 }}
-                                    className="mt-10 px-10 py-4 rounded-xl font-semibold transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed"
-                                    style={{
-                                        background: isValid()
-                                            ? `linear-gradient(135deg, ${gradientColors.primary}, ${gradientColors.secondary})`
-                                            : "rgba(255,255,255,0.1)",
-                                        boxShadow: isValid() ? `0 0 30px ${gradientColors.primary}40` : "none",
-                                    }}
+                                    className={`mt-10 px-10 py-4 rounded-xl font-semibold transition-all duration-300 ${isValid()
+                                            ? "bg-white text-black hover:bg-white/90"
+                                            : "bg-white/10 text-white/30 cursor-not-allowed"
+                                        }`}
                                 >
                                     {currentStep === steps.length - 1 ? "Complete" : "Continue"}
                                 </motion.button>

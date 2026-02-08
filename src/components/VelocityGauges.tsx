@@ -42,7 +42,7 @@ function getVelocityBadge(v: number): { text: string; color: string } {
   if (v < -10) return { text: "DECLINING", color: "bg-orange-500/20 text-orange-400" };
   if (v <= 10) return { text: "STABLE", color: "bg-yellow-500/20 text-yellow-400" };
   if (v <= 30) return { text: "GROWING", color: "bg-green-500/20 text-green-400" };
-  return { text: "SURGING", color: "bg-cyan-500/20 text-cyan-400" };
+  return { text: "SURGING", color: "bg-white/20 text-white" };
 }
 
 function getPeakWidthBadge(days: number): { text: string; color: string } {

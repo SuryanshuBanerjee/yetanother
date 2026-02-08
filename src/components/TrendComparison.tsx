@@ -120,7 +120,7 @@ export default function TrendComparison({ onClose, userRole = "general-user" }: 
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
             >
-                <Loader2 className="w-8 h-8 text-cyan-400" />
+                <Loader2 className="w-8 h-8 text-white" />
             </motion.div>
             <div className="text-white/50 text-sm">Analyzing {label}...</div>
             <div className="w-full space-y-3">
@@ -189,9 +189,9 @@ export default function TrendComparison({ onClose, userRole = "general-user" }: 
                 {/* Header */}
                 <div className="text-center mb-8">
                     <div className="flex items-center justify-center gap-3 mb-2">
-                        <Swords className="w-8 h-8 text-purple-400" />
+                        <Swords className="w-8 h-8 text-white/70" />
                         <h2 className="text-3xl font-bold text-white">
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-white/50">
                                 Trend Showdown
                             </span>
                         </h2>
@@ -212,13 +212,13 @@ export default function TrendComparison({ onClose, userRole = "general-user" }: 
                                 onClick={() => runComparison(matchup)}
                                 whileHover={{ scale: 1.02, y: -2 }}
                                 whileTap={{ scale: 0.98 }}
-                                className="p-5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-purple-500/30 transition-all group"
+                                className="p-5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/50/30 transition-all group"
                             >
-                                <div className="text-[10px] font-mono text-purple-400 mb-2">{matchup.category}</div>
+                                <div className="text-[10px] font-mono text-white/70 mb-2">{matchup.category}</div>
                                 <div className="flex items-center justify-center gap-3">
-                                    <span className="text-cyan-400 font-semibold">{matchup.a}</span>
+                                    <span className="text-white font-semibold">{matchup.a}</span>
                                     <span className="text-white/30 text-xs">vs</span>
-                                    <span className="text-purple-400 font-semibold">{matchup.b}</span>
+                                    <span className="text-white/70 font-semibold">{matchup.b}</span>
                                 </div>
                                 <div className="mt-3 text-xs text-white/30 group-hover:text-white/50 transition-colors">
                                     Click to compare →
@@ -237,23 +237,23 @@ export default function TrendComparison({ onClose, userRole = "general-user" }: 
                     >
                         <div className="text-center mb-8">
                             <div className="flex items-center justify-center gap-4 text-2xl font-bold">
-                                <span className="text-cyan-400">{selectedMatchup.a}</span>
+                                <span className="text-white">{selectedMatchup.a}</span>
                                 <motion.div
                                     animate={{ rotate: [0, 360] }}
                                     transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                                    className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-purple-500 flex items-center justify-center"
+                                    className="w-10 h-10 rounded-full bg-gradient-to-br from-white to-white/50 flex items-center justify-center"
                                 >
                                     <Swords className="w-5 h-5 text-white" />
                                 </motion.div>
-                                <span className="text-purple-400">{selectedMatchup.b}</span>
+                                <span className="text-white/70">{selectedMatchup.b}</span>
                             </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-8">
-                            <div className="bg-white/5 rounded-xl border border-cyan-500/20">
+                            <div className="bg-white/5 rounded-xl border border-white/20">
                                 <LoadingSkeleton label={selectedMatchup.a} />
                             </div>
-                            <div className="bg-white/5 rounded-xl border border-purple-500/20">
+                            <div className="bg-white/5 rounded-xl border border-white/50/20">
                                 <LoadingSkeleton label={selectedMatchup.b} />
                             </div>
                         </div>
@@ -300,9 +300,9 @@ export default function TrendComparison({ onClose, userRole = "general-user" }: 
                             {/* Metrics Comparison */}
                             <div className="bg-white/5 rounded-xl p-6 border border-white/10">
                                 <div className="grid grid-cols-3 gap-4 items-center pb-3 border-b border-white/10 mb-4">
-                                    <div className="text-right text-cyan-400 font-semibold">{trendA.keyword}</div>
+                                    <div className="text-right text-white font-semibold">{trendA.keyword}</div>
                                     <div className="text-center text-white/30 text-xs font-mono">METRIC</div>
-                                    <div className="text-left text-purple-400 font-semibold">{trendB.keyword}</div>
+                                    <div className="text-left text-white/70 font-semibold">{trendB.keyword}</div>
                                 </div>
 
                                 <MetricCard label="Health Score" valueA={trendA.healthScore} valueB={trendB.healthScore} winner={healthWinner} icon={Shield} />

@@ -119,14 +119,14 @@ export default function ImageUpload({ onTrendExtracted, disabled }: ImageUploadP
                         className={`
                             relative cursor-pointer rounded-xl border-2 border-dashed p-6 transition-all
                             ${isDragging
-                                ? "border-cyan-400 bg-cyan-400/10"
+                                ? "border-white bg-white/10"
                                 : "border-white/20 bg-white/5 hover:border-white/40 hover:bg-white/10"
                             }
                         `}
                     >
                         <div className="flex flex-col items-center gap-3 text-center">
-                            <div className={`p-3 rounded-full ${isDragging ? "bg-cyan-400/20" : "bg-white/10"}`}>
-                                <Upload className={`w-6 h-6 ${isDragging ? "text-cyan-400" : "text-white/50"}`} />
+                            <div className={`p-3 rounded-full ${isDragging ? "bg-white/20" : "bg-white/10"}`}>
+                                <Upload className={`w-6 h-6 ${isDragging ? "text-white" : "text-white/50"}`} />
                             </div>
                             <div>
                                 <div className="text-white/70 font-medium">
@@ -164,7 +164,7 @@ export default function ImageUpload({ onTrendExtracted, disabled }: ImageUploadP
                             {isProcessing && (
                                 <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
                                     <div className="text-center">
-                                        <Loader2 className="w-8 h-8 text-cyan-400 animate-spin mx-auto mb-2" />
+                                        <Loader2 className="w-8 h-8 text-white animate-spin mx-auto mb-2" />
                                         <div className="text-sm text-white/70">Analyzing with AI...</div>
                                     </div>
                                 </div>
@@ -179,18 +179,15 @@ export default function ImageUpload({ onTrendExtracted, disabled }: ImageUploadP
                                 className="p-4 border-t border-white/10"
                             >
                                 <div className="flex items-center gap-2 mb-2">
-                                    <Sparkles className="w-4 h-4 text-purple-400" />
-                                    <span className="text-xs text-purple-400 font-mono">DETECTED TREND</span>
+                                    <Sparkles className="w-4 h-4 text-white/70" />
+                                    <span className="text-xs text-white/70 font-mono">DETECTED TREND</span>
                                 </div>
                                 <div className="text-lg font-bold text-white mb-1">{extractedTrend.keyword}</div>
                                 <div className="text-xs text-white/50 mb-3">{extractedTrend.description}</div>
                                 <button
                                     onClick={handleAnalyze}
                                     disabled={disabled}
-                                    className="w-full py-2.5 rounded-lg font-semibold text-black transition-all disabled:opacity-50"
-                                    style={{
-                                        background: "linear-gradient(135deg, #00f0ff, #bd00ff)",
-                                    }}
+                                    className="w-full py-2.5 rounded-lg font-semibold text-black bg-white hover:bg-white/90 transition-all disabled:opacity-50"
                                 >
                                     Analyze "{extractedTrend.keyword}"
                                 </button>

@@ -47,8 +47,8 @@ export default function ActionItems({ actionItems, timeHorizon, opportunityWindo
     >
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
-        <div className="p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
-          <Icon className="w-5 h-5 text-cyan-400" />
+        <div className="p-2 rounded-lg bg-white/10 border border-white/20">
+          <Icon className="w-5 h-5 text-white" />
         </div>
         <div>
           <h3 className="text-lg font-bold text-white">Action Items</h3>
@@ -78,9 +78,9 @@ export default function ActionItems({ actionItems, timeHorizon, opportunityWindo
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 + i * 0.08 }}
-            className="flex gap-3 pl-3 border-l-2 border-cyan-400/60"
+            className="flex gap-3 pl-3 border-l-2 border-white/60"
           >
-            <span className="text-cyan-400 font-mono font-bold text-sm flex-shrink-0 mt-0.5">{i + 1}.</span>
+            <span className="text-white font-mono font-bold text-sm flex-shrink-0 mt-0.5">{i + 1}.</span>
             <p className="text-sm text-white/80 leading-relaxed">{item}</p>
           </motion.div>
         ))}

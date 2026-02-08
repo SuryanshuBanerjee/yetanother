@@ -7,12 +7,16 @@ import OnboardingQuiz from "./OnboardingQuiz";
 
 type AppState = "landing" | "quiz" | "dashboard";
 
-// Context to share user data (role, name, etc.) with the dashboard
+// Context to share user data and navigation with the dashboard
 interface UserDataContextType {
     userData: Record<string, string | string[]> | null;
+    goToLanding: () => void;
 }
 
-const UserDataContext = createContext<UserDataContextType>({ userData: null });
+const UserDataContext = createContext<UserDataContextType>({
+    userData: null,
+    goToLanding: () => { },
+});
 
 export function useUserData() {
     return useContext(UserDataContext);
@@ -40,6 +44,11 @@ export default function AppFlow({ children }: AppFlowProps) {
         setAppState("landing");
     };
 
+    const goToLanding = () => {
+        setAppState("landing");
+        setUserData(null);
+    };
+
     return (
         <>
             <AnimatePresence mode="wait">
@@ -53,7 +62,7 @@ export default function AppFlow({ children }: AppFlowProps) {
 
             {/* Dashboard - rendered when appState is "dashboard" */}
             {appState === "dashboard" && (
-                <UserDataContext.Provider value={{ userData }}>
+                <UserDataContext.Provider value={{ userData, goToLanding }}>
                     {children}
                 </UserDataContext.Provider>
             )}

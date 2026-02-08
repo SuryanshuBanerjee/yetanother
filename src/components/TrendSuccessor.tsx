@@ -63,8 +63,8 @@ export default function TrendSuccessor({ keyword, category, phase }: TrendSucces
         <div className="bg-surface-1/50 backdrop-blur-md rounded-2xl border border-white/10 p-6">
             {/* Header */}
             <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500/20 to-cyan-500/20">
-                    <Zap className="w-5 h-5 text-purple-400" />
+                <div className="p-2 rounded-lg bg-gradient-to-br from-white/50/20 to-white/20">
+                    <Zap className="w-5 h-5 text-white/70" />
                 </div>
                 <div>
                     <h3 className="text-lg font-bold text-white">What Replaces This?</h3>
@@ -80,7 +80,7 @@ export default function TrendSuccessor({ keyword, category, phase }: TrendSucces
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={predictSuccessor}
-                        className="w-full py-3 rounded-xl font-semibold text-white/80 bg-gradient-to-r from-purple-500/20 to-cyan-500/20 hover:from-purple-500/30 hover:to-cyan-500/30 border border-white/10 hover:border-white/20 transition-all flex items-center justify-center gap-2"
+                        className="w-full py-3 rounded-xl font-semibold text-white/80 bg-gradient-to-r from-white/50/20 to-white/20 hover:from-white/50/30 hover:to-white/30 border border-white/10 hover:border-white/20 transition-all flex items-center justify-center gap-2"
                     >
                         <Sparkles className="w-4 h-4" />
                         Predict Successor Trend
@@ -93,7 +93,7 @@ export default function TrendSuccessor({ keyword, category, phase }: TrendSucces
                         exit={{ opacity: 0 }}
                         className="text-center py-6"
                     >
-                        <Loader2 className="w-8 h-8 text-purple-400 animate-spin mx-auto mb-2" />
+                        <Loader2 className="w-8 h-8 text-white/70 animate-spin mx-auto mb-2" />
                         <div className="text-sm text-white/50">Analyzing trend patterns...</div>
                     </motion.div>
                 ) : successor ? (
@@ -124,11 +124,11 @@ export default function TrendSuccessor({ keyword, category, phase }: TrendSucces
                         <div className="bg-white/5 rounded-lg p-4 space-y-2">
                             <div className="flex justify-between text-sm">
                                 <span className="text-white/50">Confidence</span>
-                                <span className="text-cyan-400 font-mono">{successor.confidence}%</span>
+                                <span className="text-white font-mono">{successor.confidence}%</span>
                             </div>
                             <div className="flex justify-between text-sm">
                                 <span className="text-white/50">Timeline</span>
-                                <span className="text-purple-400 font-mono">{successor.timeline}</span>
+                                <span className="text-white/70 font-mono">{successor.timeline}</span>
                             </div>
                         </div>
 

@@ -162,11 +162,7 @@ export default function SearchWithSuggestions({
                     <button
                         type="submit"
                         disabled={loading}
-                        className="absolute right-2 top-2 bottom-2 px-6 rounded-lg font-bold flex items-center gap-2 transition-all duration-300 disabled:opacity-50"
-                        style={{
-                            background: "linear-gradient(135deg, #00f0ff, #bd00ff)",
-                            boxShadow: "0 0 20px rgba(0, 240, 255, 0.2)",
-                        }}
+                        className="absolute right-2 top-2 bottom-2 px-6 rounded-lg font-bold flex items-center gap-2 transition-all duration-300 disabled:opacity-50 bg-white hover:bg-white/90"
                     >
                         <Search className="w-4 h-4 text-black" />
                         <span className="text-black">Analyze</span>
@@ -207,7 +203,7 @@ export default function SearchWithSuggestions({
                                     }`}
                                 whileHover={{ x: 4 }}
                             >
-                                <div className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center bg-gradient-to-br from-neon-blue/20 to-purple-500/20 border border-white/10">
+                                <div className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center bg-gradient-to-br from-neon-blue/20 to-white/50/20 border border-white/10">
                                     <TrendingUp className="w-5 h-5 text-neon-blue" />
                                 </div>
                                 <div className="flex-1 min-w-0">
@@ -241,7 +237,7 @@ export default function SearchWithSuggestions({
                                 }}
                                 className="w-full px-4 py-3 flex items-center gap-3 text-left border-t border-white/5 hover:bg-white/5 transition-colors"
                             >
-                                <Clock className="w-4 h-4 text-purple-400" />
+                                <Clock className="w-4 h-4 text-white/70" />
                                 <span className="text-white/60">
                                     Search for &ldquo;<span className="text-white">{value}</span>&rdquo;
                                 </span>

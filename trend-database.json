@@ -1,27 +1,39 @@
 [
   {
-    "keyword": "2016 music",
-    "symbol": "#MUSIC",
-    "score": 30,
-    "change": 39,
-    "volume": "40.0K",
-    "risk": "high",
+    "keyword": "acm kjsse",
+    "symbol": "#AK",
+    "score": 25,
+    "change": 0,
+    "volume": "50.0K",
+    "risk": "critical",
     "category": "Unknown",
-    "phase": "Revival",
-    "lastSearched": "2026-02-08T03:05:50.000Z",
+    "phase": "Zombie",
+    "lastSearched": "2026-02-08T03:27:59.386Z",
     "searchCount": 2
   },
   {
-    "keyword": "acm kjsse",
-    "symbol": "#AK",
-    "score": 50,
-    "change": 0,
-    "volume": "50.0K",
-    "risk": "medium",
+    "keyword": "epstein",
+    "symbol": "#EPSTE",
+    "score": 43,
+    "change": 200,
+    "volume": "86.0K",
+    "risk": "high",
+    "category": "Politics",
+    "phase": "Peak",
+    "lastSearched": "2026-02-08T03:30:02.607Z",
+    "searchCount": 8
+  },
+  {
+    "keyword": "2016 music",
+    "symbol": "#MUSIC",
+    "score": 42,
+    "change": 41,
+    "volume": "42.0K",
+    "risk": "high",
     "category": "Unknown",
-    "phase": "Saturation",
-    "lastSearched": "2026-02-08T03:03:05.291Z",
-    "searchCount": 1
+    "phase": "Revival",
+    "lastSearched": "2026-02-08T03:20:38.012Z",
+    "searchCount": 3
   },
   {
     "keyword": "pokemon",
@@ -202,18 +214,6 @@
     "phase": "Growth",
     "lastSearched": "2026-02-08T00:25:48.901Z",
     "searchCount": 1
-  },
-  {
-    "keyword": "epstein",
-    "symbol": "#EPSTE",
-    "score": 46,
-    "change": 200,
-    "volume": "91.0K",
-    "risk": "high",
-    "category": "Politics",
-    "phase": "Growth",
-    "lastSearched": "2026-02-08T00:24:53.238Z",
-    "searchCount": 6
   },
   {
     "keyword": "grammy winners 2026",

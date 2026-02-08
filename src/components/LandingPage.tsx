@@ -47,36 +47,37 @@ export default function LandingPage({ onStart }: LandingPageProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, scale: 0.98 }}
             transition={{ duration: 0.6 }}
-            className="fixed inset-0 z-50 flex items-center justify-center"
-            style={{
-                background: `linear-gradient(135deg, 
-          rgba(0, 240, 255, 0.15) 0%, 
-          rgba(5, 5, 5, 1) 35%,
-          rgba(5, 5, 5, 1) 65%,
-          rgba(189, 0, 255, 0.15) 100%
-        )`,
-            }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black"
         >
-            {/* Grain Overlay */}
-            <div className="grain-overlay fixed inset-0 pointer-events-none z-[100]" />
+            {/* Subtle gradient background */}
+            <div
+                className="absolute inset-0"
+                style={{
+                    background: `radial-gradient(ellipse 80% 50% at 50% 0%, rgba(255, 255, 255, 0.03) 0%, transparent 50%)`
+                }}
+            />
 
             {/* HUD Container */}
             <motion.div
                 initial={{ y: 30, opacity: 0, scale: 0.98 }}
                 animate={{ y: 0, opacity: 1, scale: 1 }}
                 transition={{ delay: 0.2, duration: 0.7, ease: "easeOut" }}
-                className="relative w-[92vw] h-[88vh] rounded-2xl overflow-hidden hud-container"
+                className="relative w-[92vw] h-[88vh] rounded-2xl overflow-hidden"
+                style={{
+                    background: "rgba(10, 10, 10, 0.9)",
+                    border: "1px solid rgba(255, 255, 255, 0.1)",
+                }}
             >
-                {/* Corner Accents */}
-                <div className="absolute top-0 left-0 w-20 h-20 border-l-2 border-t-2 border-cyan-400/50 rounded-tl-2xl" />
-                <div className="absolute top-0 right-0 w-20 h-20 border-r-2 border-t-2 border-purple-500/50 rounded-tr-2xl" />
-                <div className="absolute bottom-0 left-0 w-20 h-20 border-l-2 border-b-2 border-purple-500/50 rounded-bl-2xl" />
-                <div className="absolute bottom-0 right-0 w-20 h-20 border-r-2 border-b-2 border-cyan-400/50 rounded-br-2xl" />
+                {/* Corner Accents - Monochrome */}
+                <div className="absolute top-0 left-0 w-20 h-20 border-l-2 border-t-2 border-white/20 rounded-tl-2xl" />
+                <div className="absolute top-0 right-0 w-20 h-20 border-r-2 border-t-2 border-white/20 rounded-tr-2xl" />
+                <div className="absolute bottom-0 left-0 w-20 h-20 border-l-2 border-b-2 border-white/20 rounded-bl-2xl" />
+                <div className="absolute bottom-0 right-0 w-20 h-20 border-r-2 border-b-2 border-white/20 rounded-br-2xl" />
 
                 {/* Header Bar */}
                 <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-8 py-4 border-b border-white/10">
                     <div className="flex items-center gap-3">
-                        <div className="w-3 h-3 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(0,240,255,0.8)]" />
+                        <div className="w-3 h-3 rounded-full bg-white/80" />
                         <span className="text-sm font-mono text-white/60">TREND PRISM v2.0</span>
                     </div>
                     <div className="flex items-center gap-4 text-xs font-mono text-white/40">
@@ -84,7 +85,7 @@ export default function LandingPage({ onStart }: LandingPageProps) {
                             <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
                             ONLINE
                         </span>
-                        <span>2026.02.07</span>
+                        <span>2026.02.08</span>
                     </div>
                 </div>
 
@@ -100,18 +101,12 @@ export default function LandingPage({ onStart }: LandingPageProps) {
                             className="block"
                             style={{
                                 color: "transparent",
-                                WebkitTextStroke: "2px rgba(0, 240, 255, 0.7)",
+                                WebkitTextStroke: "2px rgba(255, 255, 255, 0.3)",
                             }}
                         >
                             TREND
                         </span>
-                        <span
-                            className="block bg-clip-text text-transparent"
-                            style={{
-                                backgroundImage: "linear-gradient(135deg, #00f0ff, #bd00ff)",
-                                textShadow: "0 0 60px rgba(189, 0, 255, 0.4)",
-                            }}
-                        >
+                        <span className="block text-white">
                             PRISM
                         </span>
                     </motion.h1>
@@ -128,7 +123,7 @@ export default function LandingPage({ onStart }: LandingPageProps) {
 
                 {/* Rotating Cube */}
                 <motion.div
-                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[20vw] max-w-[280px] opacity-30 pointer-events-none"
+                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[20vw] max-w-[280px] opacity-20 pointer-events-none"
                     animate={{ rotate: 360 }}
                     transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
                 >
@@ -138,6 +133,7 @@ export default function LandingPage({ onStart }: LandingPageProps) {
                         width={280}
                         height={280}
                         className="w-full h-auto"
+                        style={{ filter: "grayscale(100%) brightness(1.5)" }}
                         priority
                     />
                 </motion.div>
@@ -152,7 +148,7 @@ export default function LandingPage({ onStart }: LandingPageProps) {
                                 <line x1="21" y1="21" x2="16.65" y2="16.65" />
                             </svg>
                             <span className="text-white/70 font-medium min-w-[180px]">
-                                {searchText}<span className="animate-pulse text-cyan-400">|</span>
+                                {searchText}<span className="animate-pulse text-white">|</span>
                             </span>
                         </div>
 
@@ -161,11 +157,7 @@ export default function LandingPage({ onStart }: LandingPageProps) {
                             onClick={onStart}
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
-                            className="px-8 py-3 font-bold uppercase tracking-wider rounded-xl transition-all duration-300 pointer-events-auto"
-                            style={{
-                                background: "linear-gradient(135deg, #00f0ff, #bd00ff)",
-                                boxShadow: "0 0 30px rgba(0, 240, 255, 0.3), 0 0 60px rgba(189, 0, 255, 0.2)",
-                            }}
+                            className="px-8 py-3 font-bold uppercase tracking-wider rounded-xl transition-all duration-300 pointer-events-auto bg-white text-black hover:bg-white/90"
                         >
                             Get Started
                         </motion.button>

@@ -21,7 +21,7 @@ const LINES = [
   { key: "entropy" as const, label: "Entropy", color: "#a855f7" },
   { key: "modularity" as const, label: "Modularity", color: "#f87171" },
   { key: "clustering" as const, label: "Clustering", color: "#4ade80" },
-  { key: "volume" as const, label: "Volume", color: "#00f0ff" },
+  { key: "volume" as const, label: "Volume", color: "#ffffff" },
 ];
 
 // Which lines to emphasize per role
@@ -283,7 +283,7 @@ export default function MetricsHistoryChart({ metricsHistory, userRole = "genera
                 </div>
               </div>
               <div className="flex items-start gap-2">
-                <div className="w-2 h-2 rounded-full mt-1.5 shrink-0" style={{ backgroundColor: "#00f0ff" }} />
+                <div className="w-2 h-2 rounded-full mt-1.5 shrink-0" style={{ backgroundColor: "#ffffff" }} />
                 <div>
                   <span className="text-xs font-medium text-white/80">Volume</span>
                   <p className="text-xs text-white/40">Search interest volume over time — the raw signal of public attention and engagement.</p>

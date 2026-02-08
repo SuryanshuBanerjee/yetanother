@@ -55,7 +55,7 @@ export default function SludgeDetector({ sludgeScore }: { sludgeScore: number })
             {/* Background Grid Effect */}
             <div className="pointer-events-none absolute inset-0 z-[-1] opacity-10"
                 style={{
-                    backgroundImage: "radial-gradient(circle, #39ff14 1px, transparent 1px)",
+                    backgroundImage: "radial-gradient(circle, #ffffff 1px, transparent 1px)",
                     backgroundSize: "10px 10px"
                 }}
             />

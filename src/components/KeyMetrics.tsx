@@ -47,7 +47,7 @@ const MetricCard = ({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay }}
-        className={`p-4 rounded-xl border bg-gradient-to-br from-white/5 to-transparent hover:border-white/20 transition-colors ${emphasized ? "border-l-2 border-cyan-400/60 shadow-[0_0_12px_rgba(0,240,255,0.08)]" : "border-white/10"}`}
+        className={`p-4 rounded-xl border bg-gradient-to-br from-white/5 to-transparent hover:border-white/20 transition-colors ${emphasized ? "border-l-2 border-white/60 shadow-[0_0_12px_rgba(0,240,255,0.08)]" : "border-white/10"}`}
     >
         <div className="flex items-start justify-between mb-2">
             <Icon className="w-4 h-4 text-white/40" />

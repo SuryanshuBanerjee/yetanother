@@ -177,7 +177,7 @@ export default function DecayLeaderboard({ onTrendClick }: DecayLeaderboardProps
 
                             {/* Name */}
                             <div className="flex-1 min-w-0">
-                                <div className="font-medium text-white truncate group-hover:text-cyan-400 transition-colors">
+                                <div className="font-medium text-white truncate group-hover:text-white transition-colors">
                                     {entry.name}
                                 </div>
                                 <div className="flex items-center gap-2 text-xs">

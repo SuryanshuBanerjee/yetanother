@@ -31,7 +31,7 @@ export default function VibeEntropyChart({ data, entropy }: VibeEntropyChartProp
                         low: data.map((d) => d.low),
                         close: data.map((d) => d.close),
                         type: "candlestick",
-                        increasing: { line: { color: "#00f0ff" } }, // Neon Blue
+                        increasing: { line: { color: "#ffffff" } }, // Neon Blue
                         decreasing: { line: { color: "#ff2a6d" } }, // Decay Red
                     },
                 ]}

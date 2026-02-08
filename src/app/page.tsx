@@ -29,7 +29,7 @@ function Dashboard() {
   const [searchingKeyword, setSearchingKeyword] = useState("");
   const [data, setData] = useState<Record<string, unknown> | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
-  const { userData } = useUserData();
+  const { userData, goToLanding } = useUserData();
 
   // Progress tracking
   const [currentStep, setCurrentStep] = useState<AnalysisStep | null>(null);
@@ -143,15 +143,7 @@ function Dashboard() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
-      className="min-h-screen relative font-sans"
-      style={{
-        background: `linear-gradient(135deg,
-          rgba(0, 240, 255, 0.12) 0%,
-          rgba(5, 5, 5, 1) 35%,
-          rgba(5, 5, 5, 1) 65%,
-          rgba(189, 0, 255, 0.12) 100%
-        )`,
-      }}
+      className="min-h-screen relative font-sans bg-black"
     >
       {/* Grain Overlay */}
       <div className="grain-overlay fixed inset-0 pointer-events-none z-50" />
@@ -163,20 +155,25 @@ function Dashboard() {
         transition={{ delay: 0.2, duration: 0.6 }}
         className="relative z-10 w-[95vw] max-w-7xl mx-auto my-6 min-h-[calc(100vh-3rem)] rounded-2xl overflow-hidden hud-container"
       >
-        {/* Corner Accents */}
-        <div className="absolute top-0 left-0 w-16 h-16 border-l-2 border-t-2 border-cyan-400/50 rounded-tl-2xl" />
-        <div className="absolute top-0 right-0 w-16 h-16 border-r-2 border-t-2 border-purple-500/50 rounded-tr-2xl" />
-        <div className="absolute bottom-0 left-0 w-16 h-16 border-l-2 border-b-2 border-purple-500/50 rounded-bl-2xl" />
-        <div className="absolute bottom-0 right-0 w-16 h-16 border-r-2 border-b-2 border-cyan-400/50 rounded-br-2xl" />
+        {/* Corner Accents - Monochrome */}
+        <div className="absolute top-0 left-0 w-16 h-16 border-l-2 border-t-2 border-white/20 rounded-tl-2xl" />
+        <div className="absolute top-0 right-0 w-16 h-16 border-r-2 border-t-2 border-white/20 rounded-tr-2xl" />
+        <div className="absolute bottom-0 left-0 w-16 h-16 border-l-2 border-b-2 border-white/20 rounded-bl-2xl" />
+        <div className="absolute bottom-0 right-0 w-16 h-16 border-r-2 border-b-2 border-white/20 rounded-br-2xl" />
 
         {/* Header Bar */}
         <header className="flex justify-between items-center px-8 py-4 border-b border-white/10">
           <div className="flex items-center gap-4">
-            <div className="w-3 h-3 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(0,240,255,0.8)]" />
-            <h1 className="text-xl font-bold tracking-tight">
-              <span className="text-white">TREND</span>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 ml-1">PRISM</span>
-            </h1>
+            <button
+              onClick={goToLanding}
+              className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer"
+            >
+              <div className="w-3 h-3 rounded-full bg-white/80" />
+              <h1 className="text-xl font-bold tracking-tight">
+                <span className="text-white">TREND</span>
+                <span className="text-white/50 ml-1">PRISM</span>
+              </h1>
+            </button>
             {data && (
               <button
                 onClick={handleBackToStocks}
@@ -188,7 +185,7 @@ function Dashboard() {
           </div>
           <div className="flex gap-6 text-xs font-mono text-white/50">
             <span className="text-white/70">Welcome, {userName}</span>
-            <span className="px-2 py-0.5 rounded border border-white/10 text-neon-blue">
+            <span className="px-2 py-0.5 rounded border border-white/20 text-white/70">
               {quizRole.charAt(0).toUpperCase() + quizRole.slice(1)}
             </span>
             <span className="flex items-center gap-2">
@@ -198,7 +195,7 @@ function Dashboard() {
             <span>V 2.0.0</span>
             <button
               onClick={() => setShowComparison(true)}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-lg border border-purple-500/30 text-purple-400 hover:bg-purple-500/10 hover:border-purple-400/50 transition-all"
+              className="flex items-center gap-1.5 px-3 py-1 rounded-lg border border-white/20 text-white/70 hover:bg-white/10 hover:border-white/40 transition-all"
             >
               <GitCompare className="w-3 h-3" />
               <span>Compare</span>

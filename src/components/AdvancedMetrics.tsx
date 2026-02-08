@@ -34,7 +34,7 @@ export default function AdvancedMetrics({ data }: { data: DecayAnalysis }) {
                                 type: "scatter",
                                 mode: "lines+markers",
                                 name: "Semantic Entropy",
-                                line: { color: "#bd00ff", width: 3 }, // Neon Purple
+                                line: { color: "#888888", width: 3 }, // Neon Purple
                                 fill: "tozeroy",
                                 fillcolor: "rgba(189, 0, 255, 0.1)"
                             }
@@ -63,7 +63,7 @@ export default function AdvancedMetrics({ data }: { data: DecayAnalysis }) {
                                 type: "scatter",
                                 mode: "lines",
                                 name: "Clustering (Cohesion)",
-                                line: { color: "#00f0ff", width: 2 } // Neon Blue
+                                line: { color: "#ffffff", width: 2 } // Neon Blue
                             }
                         ]}
                         layout={{ ...commonLayout as any, title: "" }}
@@ -82,7 +82,7 @@ export default function AdvancedMetrics({ data }: { data: DecayAnalysis }) {
                                 type: "scatter",
                                 fill: "tozeroy",
                                 name: "Post Volume",
-                                line: { color: "#39ff14" } // Sludge Green
+                                line: { color: "#ffffff" } // Sludge Green
                             }
                         ]}
                         layout={{ ...commonLayout as any, title: "" }}
@@ -100,7 +100,7 @@ export default function AdvancedMetrics({ data }: { data: DecayAnalysis }) {
                                 y: data.drivers.map(d => d.impact),
                                 type: "bar",
                                 marker: {
-                                    color: ["#bd00ff", "#ff2a6d", "#39ff14", "#00f0ff", "#ffffff"]
+                                    color: ["#888888", "#ff2a6d", "#ffffff", "#ffffff", "#ffffff"]
                                 },
                                 text: data.drivers.map(d => `${d.impact}%`),
                                 textposition: "auto"

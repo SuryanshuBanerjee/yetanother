@@ -30,7 +30,7 @@ export default function NewsHeadlines({ headlines, articles, sentiment }: NewsHe
     >
       <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Newspaper className="w-4 h-4 text-cyan-400" />
+          <Newspaper className="w-4 h-4 text-white" />
           <span className="font-bold text-white">Live News</span>
         </div>
         <div className="flex items-center gap-3 text-xs">

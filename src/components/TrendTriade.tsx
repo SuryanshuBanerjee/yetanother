@@ -74,7 +74,7 @@ export default function TrendTriade({ trendTriade, userRole = "general-user" }: 
             {/* Gradient definition */}
             <defs>
               <linearGradient id="triadeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#00f0ff" stopOpacity="0.25" />
+                <stop offset="0%" stopColor="#ffffff" stopOpacity="0.25" />
                 <stop offset="100%" stopColor="#a855f7" stopOpacity="0.15" />
               </linearGradient>
               <filter id="glowFilter" x="-50%" y="-50%" width="200%" height="200%">
@@ -103,7 +103,7 @@ export default function TrendTriade({ trendTriade, userRole = "general-user" }: 
               transition={{ delay: 0.3, duration: 0.5 }}
               points={dataPath}
               fill="url(#triadeGradient)"
-              stroke="#00f0ff"
+              stroke="#ffffff"
               strokeWidth={2}
             />
 

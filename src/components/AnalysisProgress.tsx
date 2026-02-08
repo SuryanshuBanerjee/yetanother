@@ -47,10 +47,7 @@ export default function AnalysisProgress({ currentStep, completedSteps, keyword 
                     style={{ background: "rgba(255,255,255,0.1)" }}
                 >
                     <motion.div
-                        className="h-full rounded-full"
-                        style={{
-                            background: "linear-gradient(90deg, #00f0ff, #bd00ff)",
-                        }}
+                        className="h-full rounded-full bg-white"
                         initial={{ width: "0%" }}
                         animate={{ width: `${progress * 100}%` }}
                         transition={{ duration: 0.5, ease: "easeOut" }}
@@ -75,10 +72,10 @@ export default function AnalysisProgress({ currentStep, completedSteps, keyword 
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: idx * 0.1 }}
                             className={`flex items-center gap-4 p-4 rounded-xl transition-all ${isCurrent
-                                    ? "bg-neon-blue/10 border border-neon-blue/30"
-                                    : isCompleted
-                                        ? "bg-green-500/10 border border-green-500/20"
-                                        : "bg-white/5 border border-white/5"
+                                ? "bg-neon-blue/10 border border-neon-blue/30"
+                                : isCompleted
+                                    ? "bg-green-500/10 border border-green-500/20"
+                                    : "bg-white/5 border border-white/5"
                                 }`}
                         >
                             {/* Icon */}

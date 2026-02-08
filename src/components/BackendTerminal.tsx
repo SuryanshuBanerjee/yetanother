@@ -123,14 +123,14 @@ export default function BackendTerminal() {
             exit={{ scale: 0, opacity: 0 }}
             transition={{ type: "spring", stiffness: 400, damping: 25 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-5 right-5 z-[9999] flex items-center justify-center w-12 h-12 rounded-full border border-white/10 bg-[#0a0a0a]/90 backdrop-blur-md shadow-lg shadow-cyan-500/10 hover:shadow-cyan-500/30 hover:border-cyan-500/40 transition-all duration-200 cursor-pointer group"
+            className="fixed bottom-5 right-5 z-[9999] flex items-center justify-center w-12 h-12 rounded-full border border-white/10 bg-[#0a0a0a]/90 backdrop-blur-md shadow-lg hover:border-white/30 transition-all duration-200 cursor-pointer group"
             title="Open backend logs"
           >
-            <Terminal className="w-5 h-5 text-[#00f0ff] group-hover:drop-shadow-[0_0_6px_#00f0ff]" />
+            <Terminal className="w-5 h-5 text-white/70 group-hover:text-white" />
 
             {/* Unread badge */}
             {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white bg-[#bd00ff] rounded-full shadow-md shadow-purple-500/40">
+              <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-black bg-white rounded-full">
                 {unreadCount > 99 ? "99+" : unreadCount}
               </span>
             )}
@@ -151,8 +151,8 @@ export default function BackendTerminal() {
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/10 bg-white/[0.02] shrink-0">
               <div className="flex items-center gap-2">
-                <Terminal className="w-4 h-4 text-[#00f0ff] drop-shadow-[0_0_4px_#00f0ff]" />
-                <span className="text-xs font-mono font-semibold tracking-widest text-[#00f0ff]/80 uppercase">
+                <Terminal className="w-4 h-4 text-white/80" />
+                <span className="text-xs font-mono font-semibold tracking-widest text-white/80 uppercase">
                   Backend Logs
                 </span>
                 <span className="text-[10px] font-mono text-white/30">
@@ -182,9 +182,8 @@ export default function BackendTerminal() {
               {logs.map((entry) => (
                 <div
                   key={entry.index}
-                  className={`flex items-start gap-2 py-[1px] ${
-                    entry.level === "error" ? "text-red-400/90" : ""
-                  }`}
+                  className={`flex items-start gap-2 py-[1px] ${entry.level === "error" ? "text-red-400/90" : ""
+                    }`}
                 >
                   {/* Timestamp */}
                   <span className="text-white/25 shrink-0 select-none">
@@ -193,20 +192,18 @@ export default function BackendTerminal() {
 
                   {/* Level dot */}
                   <span
-                    className={`mt-[6px] shrink-0 w-1.5 h-1.5 rounded-full ${
-                      entry.level === "error"
+                    className={`mt-[6px] shrink-0 w-1.5 h-1.5 rounded-full ${entry.level === "error"
                         ? "bg-red-500 shadow-[0_0_4px_rgba(239,68,68,0.6)]"
                         : "bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.6)]"
-                    }`}
+                      }`}
                   />
 
                   {/* Message */}
                   <span
-                    className={`break-all ${
-                      entry.level === "error"
+                    className={`break-all ${entry.level === "error"
                         ? "text-red-400/80"
                         : "text-white/70"
-                    }`}
+                      }`}
                   >
                     {entry.message}
                   </span>
@@ -215,7 +212,7 @@ export default function BackendTerminal() {
             </div>
 
             {/* Bottom glow accent */}
-            <div className="h-[1px] bg-gradient-to-r from-transparent via-[#00f0ff]/20 to-transparent shrink-0" />
+            <div className="h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent shrink-0" />
           </motion.div>
         )}
       </AnimatePresence>

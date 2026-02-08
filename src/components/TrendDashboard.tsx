@@ -218,7 +218,7 @@ export default function TrendDashboard({ data, onRelatedTrendClick, userRole = "
                 <p className="text-white/70 leading-relaxed">{summaryText}</p>
                 {deepAnalysis && (
                     <div className="mt-4 pt-4 border-t border-white/10">
-                        <h4 className="text-sm font-semibold text-cyan-400 mb-2">AI Deep Analysis</h4>
+                        <h4 className="text-sm font-semibold text-white mb-2">AI Deep Analysis</h4>
                         <p className="text-white/60 text-sm leading-relaxed">{deepAnalysis}</p>
                     </div>
                 )}

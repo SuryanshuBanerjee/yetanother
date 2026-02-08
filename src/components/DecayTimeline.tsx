@@ -13,11 +13,11 @@ interface DecayTimelineProps {
 const PHASES = ["Growth", "Peak", "Saturation", "Decay", "Collapse"] as const;
 
 const phaseColors: Record<string, string> = {
-    Growth: "#39ff14",
-    Peak: "#00f0ff",
-    Saturation: "#fbbf24",
-    Decay: "#f97316",
-    Collapse: "#ff2a6d",
+    Growth: "#ffffff",
+    Peak: "#e0e0e0",
+    Saturation: "#a0a0a0",
+    Decay: "#707070",
+    Collapse: "#ff6369",
 };
 
 export default function DecayTimeline({ phase, collapseProbability, velocity, healthScore }: DecayTimelineProps) {
@@ -64,8 +64,8 @@ export default function DecayTimeline({ phase, collapseProbability, velocity, he
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-purple-500/20">
-                        <Calendar className="w-5 h-5 text-purple-400" />
+                    <div className="p-2 rounded-lg bg-white/50/20">
+                        <Calendar className="w-5 h-5 text-white/70" />
                     </div>
                     <div>
                         <h3 className="text-lg font-bold text-white">Decay Forecast</h3>
@@ -87,9 +87,9 @@ export default function DecayTimeline({ phase, collapseProbability, velocity, he
                     {/* Grid lines */}
                     <defs>
                         <linearGradient id="curveGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" stopColor="#39ff14" />
-                            <stop offset="50%" stopColor="#fbbf24" />
-                            <stop offset="100%" stopColor="#ff2a6d" />
+                            <stop offset="0%" stopColor="#ffffff" />
+                            <stop offset="50%" stopColor="#888888" />
+                            <stop offset="100%" stopColor="#ff6369" />
                         </linearGradient>
                     </defs>
 
@@ -145,10 +145,10 @@ export default function DecayTimeline({ phase, collapseProbability, velocity, he
                         <div
                             key={p}
                             className={`text-[10px] font-mono text-center ${i === currentPhaseIndex
-                                    ? "text-white font-bold"
-                                    : i < currentPhaseIndex
-                                        ? "text-white/40"
-                                        : "text-white/20"
+                                ? "text-white font-bold"
+                                : i < currentPhaseIndex
+                                    ? "text-white/40"
+                                    : "text-white/20"
                                 }`}
                         >
                             {p}
@@ -160,7 +160,7 @@ export default function DecayTimeline({ phase, collapseProbability, velocity, he
             {/* Key Insights */}
             <div className="grid grid-cols-3 gap-3">
                 <div className="bg-white/5 rounded-lg p-3 text-center">
-                    <Clock className="w-4 h-4 text-cyan-400 mx-auto mb-1" />
+                    <Clock className="w-4 h-4 text-white/60 mx-auto mb-1" />
                     <div className="text-xs text-white/40">Current Phase</div>
                     <div className="text-sm font-bold" style={{ color: phaseColors[normalizedPhase] }}>
                         {normalizedPhase}
