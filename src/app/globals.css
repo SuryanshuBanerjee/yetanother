@@ -1,29 +1,53 @@
 @import "tailwindcss";
 
 :root {
-  /* High-end Dark Theme Variables (Original Vibe) */
-  --background: #050505;
-  --foreground: #ededed;
+  /* Refined Dark Theme - More premium, less "AI generated" */
+  --background: #0a0a0f;
+  --foreground: #f0f0f5;
 
-  /* Brand Colors (Neon) */
-  --neon-blue: #00f0ff;
-  --neon-purple: #bd00ff;
-  --decay-red: #ff2a6d;
-  --sludge-green: #39ff14;
+  /* Primary Brand Colors - Cohesive palette */
+  --primary: #6366f1;       /* Indigo - main accent */
+  --primary-soft: #818cf8;  /* Lighter indigo */
+  --secondary: #22d3ee;     /* Cyan - complementary */
+  --secondary-soft: #67e8f9;
 
-  /* Surface Colors */
-  --surface-1: #121212;
-  --surface-2: #1e1e1e;
-  --border-color: #333333;
+  /* Status Colors - More refined */
+  --success: #10b981;       /* Emerald green */
+  --warning: #f59e0b;       /* Amber */
+  --danger: #ef4444;        /* Red */
+  --danger-soft: #f87171;
+
+  /* Muted accent for decay theme */
+  --decay-primary: #f43f5e;    /* Rose - softer than pure red */
+  --decay-secondary: #fb7185;
+
+  /* Surface Colors - Deeper, richer */
+  --surface-0: #0a0a0f;
+  --surface-1: #121218;
+  --surface-2: #1a1a24;
+  --surface-3: #252530;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(255, 255, 255, 0.15);
+
+  /* Legacy support */
+  --neon-blue: var(--secondary);
+  --neon-purple: var(--primary);
+  --decay-red: var(--decay-primary);
+  --sludge-green: var(--success);
 }
 
 @theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-neon-blue: var(--neon-blue);
-  --color-neon-purple: var(--neon-purple);
-  --color-decay-red: var(--decay-red);
-  --color-sludge-green: var(--sludge-green);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-neon-blue: var(--secondary);
+  --color-neon-purple: var(--primary);
+  --color-decay-red: var(--decay-primary);
+  --color-sludge-green: var(--success);
   --color-surface-1: var(--surface-1);
   --color-surface-2: var(--surface-2);
   --color-border-color: var(--border-color);
@@ -33,125 +57,182 @@
 body {
   background-color: var(--background);
   color: var(--foreground);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Glassmorphism Utilities */
+/* Better text rendering */
+* {
+  text-rendering: optimizeLegibility;
+}
+
+/* Subtle selection color */
+::selection {
+  background: rgba(99, 102, 241, 0.3);
+  color: white;
+}
+
+/* Glassmorphism Utilities - More refined */
 .glass {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .glass-dark {
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(10, 10, 15, 0.8);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.04);
 }
 
-/* Neon Text Utilities */
+/* Accent Text - Refined glow */
 .text-neon-blue {
-  color: var(--neon-blue);
-  text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+  color: var(--secondary);
+  text-shadow: 0 0 20px rgba(34, 211, 238, 0.3);
 }
 
 .text-neon-purple {
-  color: var(--neon-purple);
-  text-shadow: 0 0 10px rgba(189, 0, 255, 0.5);
+  color: var(--primary);
+  text-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
 }
 
 .text-decay-red {
-  color: var(--decay-red);
-  text-shadow: 0 0 10px rgba(255, 42, 109, 0.5);
+  color: var(--decay-primary);
+  text-shadow: 0 0 20px rgba(244, 63, 94, 0.3);
 }
 
-/* HUD Utilities (Restored) */
+/* Premium container styles */
 .hud-container {
-  background: linear-gradient(135deg, rgba(0, 0, 0, 0.7), rgba(15, 15, 25, 0.5));
-  backdrop-filter: blur(20px);
-  border: 1px solid transparent;
-  background-origin: border-box;
-  background-clip: padding-box, border-box;
+  background: linear-gradient(
+    145deg,
+    rgba(18, 18, 24, 0.9),
+    rgba(10, 10, 15, 0.95)
+  );
+  backdrop-filter: blur(20px) saturate(150%);
+  border: 1px solid var(--border-color);
   position: relative;
   overflow: hidden;
 }
 
-.hud-container-border {
-  background-image: linear-gradient(135deg, rgba(0, 0, 0, 0.7), rgba(15, 15, 25, 0.5)),
-    linear-gradient(135deg, rgba(0, 240, 255, 0.4), rgba(189, 0, 255, 0.4));
+.hud-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    145deg,
+    rgba(99, 102, 241, 0.03) 0%,
+    transparent 50%
+  );
+  pointer-events: none;
 }
 
-/* Grain Overlay */
+.hud-container-border {
+  border-image: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.2),
+    rgba(34, 211, 238, 0.1)
+  ) 1;
+}
+
+/* Subtle grain overlay - less noisy */
 .grain-overlay {
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 9999;
-  /* High z-index to sit on top */
-  opacity: 0.03;
+  opacity: 0.015;
+  mix-blend-mode: overlay;
 }
 
 .grain-overlay::before {
   content: "";
   position: absolute;
   inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-  opacity: 0.5;
-  /* Adjust opacity within the pseudo-element for control */
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.4;
 }
 
-
-/* Gradient Backgrounds */
+/* Refined gradient backgrounds */
 .gradient-bg {
-  background: radial-gradient(circle at 50% 50%, rgba(189, 0, 255, 0.1) 0%, rgba(5, 5, 5, 0) 50%),
-    radial-gradient(circle at 80% 20%, rgba(0, 240, 255, 0.1) 0%, rgba(5, 5, 5, 0) 50%);
+  background: 
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 90% 80%, rgba(34, 211, 238, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 30% at 10% 60%, rgba(244, 63, 94, 0.05) 0%, transparent 50%);
 }
 
-/* Animated Blobs */
+/* Animated ambient blobs - More subtle */
 .blob-1 {
   position: absolute;
-  top: -10%;
-  left: -10%;
-  width: 50vw;
-  height: 50vw;
-  background: radial-gradient(circle, rgba(0, 240, 255, 0.15) 0%, transparent 70%);
-  filter: blur(80px);
-  animation: float 20s infinite ease-in-out;
+  top: -20%;
+  left: -15%;
+  width: 45vw;
+  height: 45vw;
+  background: radial-gradient(
+    circle,
+    rgba(99, 102, 241, 0.12) 0%,
+    transparent 60%
+  );
+  filter: blur(100px);
+  animation: float 30s infinite ease-in-out;
   z-index: 0;
 }
 
 .blob-2 {
   position: absolute;
-  bottom: -10%;
-  right: -10%;
-  width: 50vw;
-  height: 50vw;
-  background: radial-gradient(circle, rgba(189, 0, 255, 0.15) 0%, transparent 70%);
-  filter: blur(80px);
-  animation: float 25s infinite ease-in-out reverse;
+  bottom: -20%;
+  right: -15%;
+  width: 45vw;
+  height: 45vw;
+  background: radial-gradient(
+    circle,
+    rgba(34, 211, 238, 0.10) 0%,
+    transparent 60%
+  );
+  filter: blur(100px);
+  animation: float 35s infinite ease-in-out reverse;
   z-index: 0;
 }
 
 @keyframes float {
-
-  0%,
-  100% {
-    transform: translate(0, 0);
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
   }
-
-  50% {
-    transform: translate(30px, 50px);
+  33% {
+    transform: translate(20px, 30px) scale(1.02);
+  }
+  66% {
+    transform: translate(-15px, 15px) scale(0.98);
   }
 }
 
-/* HUD Card */
+/* Premium card style */
 .hud-card {
   position: relative;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.04),
+    rgba(255, 255, 255, 0.01)
+  );
+  border: 1px solid var(--border-color);
+  backdrop-filter: blur(12px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
+}
+
+.hud-card:hover {
+  border-color: var(--border-hover);
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.06),
+    rgba(255, 255, 255, 0.02)
+  );
+  transform: translateY(-1px);
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.3),
+    0 0 40px rgba(99, 102, 241, 0.05);
 }
 
 .hud-card::before {
@@ -160,17 +241,22 @@ body {
   top: 0;
   left: 0;
   width: 100%;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.5), transparent);
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(99, 102, 241, 0.3),
+    transparent
+  );
   transform: translateX(-100%);
-  transition: transform 0.5s ease;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .hud-card:hover::before {
   transform: translateX(100%);
 }
 
-/* Neon Accent Line */
+/* Subtle accent underline */
 .neon-accent {
   position: relative;
 }
@@ -182,6 +268,42 @@ body {
   left: 0;
   width: 100%;
   height: 2px;
-  background: var(--neon-blue);
-  box-shadow: 0 0 10px var(--neon-blue);
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  border-radius: 1px;
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
+}
+
+/* Smooth scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Button hover states */
+button {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Focus states for accessibility */
+*:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Smooth transition for interactive elements */
+a, button, [role="button"] {
+  transition: all 0.2s ease;
 }

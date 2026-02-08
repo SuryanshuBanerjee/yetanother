@@ -238,6 +238,11 @@ export default function OnboardingQuiz({ onComplete, onBack }: OnboardingQuizPro
                                         onChange={(e) => setFormData((prev) => ({ ...prev, [step.id]: e.target.value }))}
                                         placeholder={step.placeholder}
                                         autoFocus
+                                        onKeyDown={(e) => {
+                                            if (e.key === "Enter" && isValid()) {
+                                                handleNext();
+                                            }
+                                        }}
                                         className="w-full bg-transparent border-b-2 py-3 text-2xl text-white text-center outline-none transition-colors placeholder:text-white/20"
                                         style={{ borderColor: `${gradientColors.primary}60` }}
                                     />

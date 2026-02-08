@@ -10,6 +10,9 @@ import TrendingStocks from "@/components/TrendingStocks";
 import AnalysisProgress, { AnalysisStep } from "@/components/AnalysisProgress";
 import { Activity } from "lucide-react";
 import SearchWithSuggestions from "@/components/SearchWithSuggestions";
+import TrendComparison from "@/components/TrendComparison";
+import DecayLeaderboard from "@/components/DecayLeaderboard";
+import { GitCompare } from "lucide-react";
 
 
 // Role mapping from quiz IDs to API role keys
@@ -31,6 +34,7 @@ function Dashboard() {
   // Progress tracking
   const [currentStep, setCurrentStep] = useState<AnalysisStep | null>(null);
   const [completedSteps, setCompletedSteps] = useState<AnalysisStep[]>([]);
+  const [showComparison, setShowComparison] = useState(false);
 
   const dashboardRef = useRef<HTMLDivElement>(null);
 
@@ -41,8 +45,8 @@ function Dashboard() {
 
   // Scroll to top when dashboard data loads
   useEffect(() => {
-    if (data && dashboardRef.current) {
-      dashboardRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (data) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [data]);
 
@@ -192,6 +196,13 @@ function Dashboard() {
               <span className="text-green-400">LIVE</span>
             </span>
             <span>V 2.0.0</span>
+            <button
+              onClick={() => setShowComparison(true)}
+              className="flex items-center gap-1.5 px-3 py-1 rounded-lg border border-purple-500/30 text-purple-400 hover:bg-purple-500/10 hover:border-purple-400/50 transition-all"
+            >
+              <GitCompare className="w-3 h-3" />
+              <span>Compare</span>
+            </button>
           </div>
         </header>
 
@@ -245,13 +256,29 @@ function Dashboard() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
+                className="grid grid-cols-1 lg:grid-cols-3 gap-6"
               >
-                <TrendingStocks onStockClick={handleStockClick} />
+                <div className="lg:col-span-2">
+                  <TrendingStocks onStockClick={handleStockClick} />
+                </div>
+                <div>
+                  <DecayLeaderboard onTrendClick={handleStockClick} />
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
       </motion.div>
+
+      {/* Comparison Modal */}
+      <AnimatePresence>
+        {showComparison && (
+          <TrendComparison
+            onClose={() => setShowComparison(false)}
+            userRole={userRole}
+          />
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

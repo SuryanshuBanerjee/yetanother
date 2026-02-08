@@ -14,6 +14,7 @@ import ActionItems from "./ActionItems";
 import MetricsHistoryChart from "./MetricsHistoryChart";
 import NewsHeadlines from "./NewsHeadlines";
 import SentimentBreakdown from "./SentimentBreakdown";
+import DecayTimeline from "./DecayTimeline";
 import { SECTION_ORDER, type SectionId } from "@/lib/role-config";
 
 interface TrendDashboardProps {
@@ -127,13 +128,13 @@ export default function TrendDashboard({ data, onRelatedTrendClick, userRole = "
     // Extract numeric values from advanced inferences (API returns objects like {value, label, detail})
     const deltaVelocityNum = advancedInferences?.deltaVelocity == null ? undefined
         : typeof advancedInferences.deltaVelocity === "object" ? advancedInferences.deltaVelocity.value
-        : advancedInferences.deltaVelocity;
+            : advancedInferences.deltaVelocity;
     const peakWidthNum = advancedInferences?.peakWidth == null ? undefined
         : typeof advancedInferences.peakWidth === "object" ? advancedInferences.peakWidth.days
-        : advancedInferences.peakWidth;
+            : advancedInferences.peakWidth;
     const decayHalfLifeNum = advancedInferences?.decayHalfLife == null ? undefined
         : typeof advancedInferences.decayHalfLife === "object" ? advancedInferences.decayHalfLife.days
-        : advancedInferences.decayHalfLife;
+            : advancedInferences.decayHalfLife;
     const isUp = weekChange >= 0;
 
     const verdictText = verdict?.verdict || (data.healthScore && data.healthScore > 60 ? "NOT ANYTIME SOON" : data.healthScore && data.healthScore > 40 ? "INEVITABLE DECLINE" : "DECLINING");
@@ -191,6 +192,15 @@ export default function TrendDashboard({ data, onRelatedTrendClick, userRole = "
                 regionalSkew={advancedInferences?.regionalSkew}
             />
         ) : null,
+
+        DecayTimeline: (
+            <DecayTimeline
+                phase={phase}
+                collapseProbability={advancedInferences?.collapseProbability || 50}
+                velocity={advancedInferences?.velocity || "Stable"}
+                healthScore={data.healthScore || 50}
+            />
+        ),
 
         MetricsHistory: metricsHistory && metricsHistory.length > 0 ? (
             <div id="trend-chart-metrics-history">

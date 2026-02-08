@@ -84,6 +84,20 @@ export default function SearchWithSuggestions({
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === "Enter") {
+            // Let the form submit normally, but ensure suggestions close
+            if (!showSuggestions) return; // Form handles default
+
+            // If a suggestion is highlighted, prevent default form submit (which submits value) 
+            // and search the suggestion instead
+            if (selectedIndex >= 0 && suggestions[selectedIndex]) {
+                e.preventDefault();
+                onSearch(suggestions[selectedIndex].keyword);
+                setShowSuggestions(false);
+            }
+            return;
+        }
+
         if (!showSuggestions || suggestions.length === 0) return;
 
         if (e.key === "ArrowDown") {
@@ -122,6 +136,8 @@ export default function SearchWithSuggestions({
                         ref={inputRef}
                         type="text"
                         value={value}
+                        autoComplete="off"
+                        enterKeyHint="search"
                         onChange={(e) => {
                             onChange(e.target.value);
                             setShowSuggestions(true);
@@ -186,8 +202,8 @@ export default function SearchWithSuggestions({
                                 type="button"
                                 onClick={() => handleSuggestionClick(suggestion.keyword)}
                                 className={`w-full px-4 py-3 flex items-center gap-4 text-left transition-colors ${index === selectedIndex
-                                        ? "bg-neon-blue/10"
-                                        : "hover:bg-white/5"
+                                    ? "bg-neon-blue/10"
+                                    : "hover:bg-white/5"
                                     }`}
                                 whileHover={{ x: 4 }}
                             >
