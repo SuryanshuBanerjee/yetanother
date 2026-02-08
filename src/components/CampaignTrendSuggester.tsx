@@ -60,7 +60,17 @@ export default function CampaignTrendSuggester({ onTrendSelect, onClose }: Campa
             <motion.div
                 initial={{ scale: 0.95, y: 20 }}
                 animate={{ scale: 1, y: 0 }}
-                className="w-full max-w-4xl bg-[#0a0a0a] border border-white/10 rounded-2xl overflow-hidden shadow-2xl"
+                className="w-full max-w-4xl rounded-2xl overflow-hidden relative"
+                style={{
+                    background: "rgba(10, 10, 10, 0.95)",
+                    // Gradient Border trick
+                    backgroundImage: "linear-gradient(rgba(10, 10, 10, 0.95), rgba(10, 10, 10, 0.95)), linear-gradient(135deg, #00f2ea 0%, #ff0099 100%)",
+                    backgroundOrigin: "border-box",
+                    backgroundClip: "padding-box, border-box",
+                    border: "2px solid transparent",
+                    // Glowing Shadow
+                    boxShadow: "0 0 40px rgba(0, 242, 234, 0.15), inset 0 0 20px rgba(255, 0, 153, 0.1)",
+                }}
             >
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-white/10 bg-white/[0.02]">
@@ -90,6 +100,12 @@ export default function CampaignTrendSuggester({ onTrendSelect, onClose }: Campa
                                     onChange={(e) => setCampaign(e.target.value)}
                                     placeholder="e.g. Launching a cyberpunk-themed energy drink for gamers..."
                                     className="w-full h-32 bg-white/5 border border-white/10 rounded-xl p-4 text-white placeholder-white/20 focus:outline-none focus:border-white/30 transition-colors resize-none"
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Enter" && !e.shiftKey) {
+                                            e.preventDefault();
+                                            handleSubmit(e);
+                                        }
+                                    }}
                                 />
                             </div>
                             <button
@@ -129,7 +145,7 @@ export default function CampaignTrendSuggester({ onTrendSelect, onClose }: Campa
                                     >
                                         <div className="absolute top-4 right-4 flex items-center gap-2">
                                             <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide border ${trend.phase === 'Rising' ? 'text-emerald-400 border-emerald-500/30' :
-                                                    trend.phase === 'Peak' ? 'text-white border-white/30' : 'text-orange-400 border-orange-500/30'
+                                                trend.phase === 'Peak' ? 'text-white border-white/30' : 'text-orange-400 border-orange-500/30'
                                                 }`}>
                                                 {trend.phase}
                                             </span>

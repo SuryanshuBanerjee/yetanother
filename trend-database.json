@@ -1,5 +1,41 @@
 [
   {
+    "keyword": "joe biden",
+    "symbol": "#JB",
+    "score": 50,
+    "change": 154,
+    "volume": "100.0K",
+    "risk": "medium",
+    "category": "Politics",
+    "phase": "Peak",
+    "lastSearched": "2026-02-08T05:49:59.379Z",
+    "searchCount": 1
+  },
+  {
+    "keyword": "anjali walunj",
+    "symbol": "#AW",
+    "score": 25,
+    "change": 0,
+    "volume": "50.0K",
+    "risk": "critical",
+    "category": "General",
+    "phase": "Zombie",
+    "lastSearched": "2026-02-08T05:49:26.958Z",
+    "searchCount": 2
+  },
+  {
+    "keyword": "pokemon",
+    "symbol": "#POKEM",
+    "score": 49,
+    "change": 1,
+    "volume": "97.0K",
+    "risk": "high",
+    "category": "Entertainment",
+    "phase": "Saturation",
+    "lastSearched": "2026-02-08T05:02:55.828Z",
+    "searchCount": 10
+  },
+  {
     "keyword": "2016 music",
     "symbol": "#MUSIC",
     "score": 35,
@@ -22,18 +58,6 @@
     "phase": "Revival",
     "lastSearched": "2026-02-08T04:46:06.681Z",
     "searchCount": 1
-  },
-  {
-    "keyword": "pokemon",
-    "symbol": "#POKEM",
-    "score": 49,
-    "change": 1,
-    "volume": "97.0K",
-    "risk": "high",
-    "category": "Entertainment",
-    "phase": "Saturation",
-    "lastSearched": "2026-02-08T05:02:55.828Z",
-    "searchCount": 10
   },
   {
     "keyword": "Data Insight Drop (ELI5)",
@@ -571,30 +595,6 @@
     "volume": "500K",
     "risk": "high",
     "category": "Tech",
-    "phase": "Saturation",
-    "lastSearched": "2026-02-07T18:45:39.815Z",
-    "searchCount": 0
-  },
-  {
-    "keyword": "australia vs netherlands",
-    "symbol": "#AVN",
-    "score": 34,
-    "change": -4.1,
-    "volume": "500K",
-    "risk": "high",
-    "category": "Trending",
-    "phase": "Saturation",
-    "lastSearched": "2026-02-07T18:45:39.815Z",
-    "searchCount": 0
-  },
-  {
-    "keyword": "ugc net",
-    "symbol": "#UN",
-    "score": 31,
-    "change": -4.4,
-    "volume": "500K",
-    "risk": "high",
-    "category": "Trending",
     "phase": "Saturation",
     "lastSearched": "2026-02-07T18:45:39.815Z",
     "searchCount": 0

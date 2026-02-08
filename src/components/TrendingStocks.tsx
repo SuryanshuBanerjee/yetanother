@@ -82,18 +82,25 @@ export default function TrendingStocks({ onStockClick }: TrendingStocksProps) {
     }
 
     return (
-        <div className="w-full">
-            <div className="flex items-center justify-between mb-4">
+        <div
+            className="w-full p-6 rounded-2xl relative overflow-hidden"
+            style={{
+                background: "rgba(20, 20, 20, 0.6)",
+                border: "1px solid rgba(255, 255, 255, 0.2)",
+                boxShadow: "0 0 30px rgba(255, 255, 255, 0.1), inset 0 0 20px rgba(255, 255, 255, 0.05)",
+            }}
+        >
+            <div className="flex items-center justify-between mb-4 relative z-10">
                 <h2 className="text-lg font-bold text-white flex items-center gap-2">
                     <BarChart3 className="w-5 h-5 text-neon-blue" />
                     {hasLiveData ? "Trending Now" : "No Trends Available"}
                 </h2>
                 <span className="text-xs font-mono text-white/40">
-                    {hasLiveData ? `${stocks.length} trends • Click to analyze` : "Search for a trend to get started"}
+                    {hasLiveData ? `• Click to analyze` : "Search for a trend to get started"}
                 </span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 relative z-10">
                 {stocks.map((stock, i) => (
                     <motion.div
                         key={stock.id}
@@ -146,6 +153,14 @@ export default function TrendingStocks({ onStockClick }: TrendingStocksProps) {
                     </motion.div>
                 ))}
             </div>
+
+            {/* Inner Glow Mesh */}
+            <div
+                className="absolute inset-0 pointer-events-none z-0"
+                style={{
+                    background: "radial-gradient(circle at 50% 0%, rgba(255,255,255,0.05) 0%, transparent 70%)"
+                }}
+            />
         </div>
     );
 }

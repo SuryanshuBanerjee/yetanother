@@ -1,9 +1,18 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import RainbowCorners from "./RainbowCorners";
+import PrismLogo from "./PrismLogo";
+
+const EMOJI_LIST = ["#", "❤️", "💬", "↗️", "🔥", "✨", "👀", "🔔", "📢", "💭"];
+
+interface Emoji {
+    id: number;
+    char: string;
+    left: number;
+}
+
 
 interface LandingPageProps {
     onStart: () => void;
@@ -11,7 +20,22 @@ interface LandingPageProps {
 
 export default function LandingPage({ onStart }: LandingPageProps) {
     const [searchText, setSearchText] = useState("");
+    const [emojis, setEmojis] = useState<Emoji[]>([]);
     const phrases = ["#QuietLuxury", "#AIArt", "#SustainableFashion", "#VanLife"];
+
+    // Emoji Spawner
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const newEmoji: Emoji = {
+                id: Date.now(),
+                char: EMOJI_LIST[Math.floor(Math.random() * EMOJI_LIST.length)],
+                left: Math.random() * 100, // Random percentage within container
+            };
+            setEmojis((prev) => [...prev.slice(-15), newEmoji]); // Keep last 15 to prevent memory leak
+        }, 400); // New emoji every 400ms
+
+        return () => clearInterval(interval);
+    }, []);
 
     // Typewriter effect
     useEffect(() => {
@@ -63,24 +87,37 @@ export default function LandingPage({ onStart }: LandingPageProps) {
                 initial={{ y: 30, opacity: 0, scale: 0.98 }}
                 animate={{ y: 0, opacity: 1, scale: 1 }}
                 transition={{ delay: 0.2, duration: 0.7, ease: "easeOut" }}
-                className="relative w-[92vw] h-[88vh] rounded-2xl overflow-hidden"
+                className="relative w-[92vw] h-[88vh] rounded-[40px] overflow-hidden"
                 style={{
-                    background: "rgba(10, 10, 10, 0.9)",
-                    border: "1px solid rgba(255, 255, 255, 0.1)",
+                    background: "linear-gradient(180deg, rgba(20, 20, 20, 0.95) 0%, rgba(10, 10, 10, 0.98) 100%)",
+                    border: "1px solid rgba(255, 255, 255, 0.15)", // Brighter solid border base
+                    boxShadow: "0 0 40px rgba(255, 255, 255, 0.05), inset 0 0 80px rgba(255, 255, 255, 0.05)",
                 }}
             >
-                <RainbowCorners size="w-20 h-20" />
+                {/* Illuminated Edge Gradient Overlay */}
+                <div
+                    className="absolute inset-0 pointer-events-none rounded-[40px] z-50"
+                    style={{
+                        padding: "1px",
+                        background: "linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.4) 100%)",
+                        mask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                        maskComposite: "exclude",
+                        WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                        WebkitMaskComposite: "xor",
+                        opacity: 0.8, // Make it visible
+                    }}
+                />
+
 
                 {/* Header Bar */}
                 <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-8 py-4 border-b border-white/10">
                     <div className="flex items-center gap-3">
-                        <div className="w-3 h-3 rounded-full bg-white/80" />
-                        <span className="text-sm font-mono text-white/60">TREND PRISM v2.0</span>
+                        <PrismLogo className="w-8 h-8" />
+                        <span className="text-sm font-mono text-white/60">TREND PRISM</span>
                     </div>
                     <div className="flex items-center gap-4 text-xs font-mono text-white/40">
                         <span className="flex items-center gap-2">
                             <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                            ONLINE
                         </span>
                         <span>2026.02.08</span>
                     </div>
@@ -137,9 +174,34 @@ export default function LandingPage({ onStart }: LandingPageProps) {
 
                 {/* Bottom Action Area */}
                 <div className="absolute bottom-12 left-0 right-0 px-8">
-                    <div className="flex items-center justify-between max-w-4xl mx-auto">
+                    <div className="flex items-center justify-between max-w-4xl mx-auto relative">
+                        {/* Emoji Stream */}
+                        <div className="absolute left-10 bottom-full w-64 h-64 pointer-events-none overflow-visible">
+                            <AnimatePresence>
+                                {emojis.map((emoji) => (
+                                    <motion.div
+                                        key={emoji.id}
+                                        initial={{ opacity: 0, y: 20, x: 0, scale: 0.5 }}
+                                        animate={{
+                                            opacity: [0, 1, 0],
+                                            y: -200 - Math.random() * 100,
+                                            x: (Math.random() - 0.5) * 80,
+                                            scale: [0.5, 1.2, 0.8],
+                                            rotate: (Math.random() - 0.5) * 45,
+                                        }}
+                                        exit={{ opacity: 0 }}
+                                        transition={{ duration: 2 + Math.random(), ease: "easeOut" }}
+                                        className="absolute bottom-0 left-8 text-2xl filter drop-shadow-lg"
+                                        style={{ left: `${emoji.left}%` }}
+                                    >
+                                        {emoji.char}
+                                    </motion.div>
+                                ))}
+                            </AnimatePresence>
+                        </div>
+
                         {/* Search Preview */}
-                        <div className="flex items-center gap-3 px-6 py-3 rounded-xl bg-white/5 border border-white/10">
+                        <div className="flex items-center gap-3 px-6 py-3 rounded-xl bg-white/5 border border-white/10 relative z-10 backdrop-blur-sm">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/40">
                                 <circle cx="11" cy="11" r="8" />
                                 <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -154,7 +216,7 @@ export default function LandingPage({ onStart }: LandingPageProps) {
                             onClick={onStart}
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
-                            className="px-8 py-3 font-bold uppercase tracking-wider rounded-xl transition-all duration-300 pointer-events-auto bg-white text-black hover:bg-white/90"
+                            className="px-8 py-3 font-bold uppercase tracking-wider rounded-xl transition-all duration-300 pointer-events-auto bg-white text-black hover:bg-white/90 relative z-10"
                         >
                             Get Started
                         </motion.button>

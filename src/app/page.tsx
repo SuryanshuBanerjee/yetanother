@@ -13,7 +13,8 @@ import SearchWithSuggestions from "@/components/SearchWithSuggestions";
 import TrendComparison from "@/components/TrendComparison";
 import DecayLeaderboard from "@/components/DecayLeaderboard";
 import CampaignTrendSuggester from "@/components/CampaignTrendSuggester";
-import RainbowCorners from "@/components/RainbowCorners";
+
+import PrismLogo from "@/components/PrismLogo";
 import { GitCompare, Target } from "lucide-react";
 
 
@@ -177,9 +178,31 @@ function Dashboard() {
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.2, duration: 0.6 }}
-        className="relative z-10 w-[95vw] max-w-7xl mx-auto my-6 min-h-[calc(100vh-3rem)] rounded-2xl overflow-hidden hud-container"
+        // Style updated with UNIFORM edge lighting (whole perimeter) - outer glow enabled
+        style={{
+          // Gradient Border trick: transparent border with background-clip
+          background: "linear-gradient(rgba(10, 10, 10, 0.95), rgba(10, 10, 10, 0.95)) padding-box, linear-gradient(135deg, #00f2ea 0%, #ff0099 100%) border-box",
+          border: "2px solid transparent",
+          // Strong Colored glow matching the gradient
+          boxShadow: "0 0 50px rgba(0, 242, 234, 0.2), inset 0 0 30px rgba(255, 0, 153, 0.15)",
+          borderRadius: "40px", // Explicitly set border radius in style to override CSS
+        }}
+        className="relative z-10 w-[95vw] max-w-7xl mx-auto my-6 min-h-[calc(100vh-3rem)] rounded-[40px]"
       >
-        <RainbowCorners />
+        {/* Illuminated Edge Gradient Overlay */}
+        <div
+          className="absolute inset-0 pointer-events-none rounded-[40px] z-50"
+          style={{
+            padding: "1px",
+            background: "linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.4) 100%)",
+            mask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+            maskComposite: "exclude",
+            WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+            WebkitMaskComposite: "xor",
+            opacity: 0.8, // Make it visible
+          }}
+        />
+
 
         {/* Header Bar */}
         <header className="flex justify-between items-center px-8 py-4 border-b border-white/10">
@@ -188,7 +211,7 @@ function Dashboard() {
               onClick={goToLanding}
               className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer"
             >
-              <div className="w-3 h-3 rounded-full bg-white/80" />
+              <PrismLogo className="w-8 h-8" />
               <h1 className="text-xl font-bold tracking-tight">
                 <span className="text-white">TREND</span>
                 <span className="text-white/50 ml-1">PRISM</span>
@@ -203,16 +226,8 @@ function Dashboard() {
               </button>
             )}
           </div>
-          <div className="flex gap-6 text-xs font-mono text-white/50">
-            <span className="text-white/70">Welcome, {userName}</span>
-            <span className="px-2 py-0.5 rounded border border-white/20 text-white/70">
-              {quizRole.charAt(0).toUpperCase() + quizRole.slice(1)}
-            </span>
-            <span className="flex items-center gap-2">
-              <Activity className="w-3 h-3 text-green-400" />
-              <span className="text-green-400">LIVE</span>
-            </span>
-            <span>V 2.0.0</span>
+          <div className="flex items-center gap-6 text-xs font-mono text-white/50">
+            <span className="text-white/70 font-bold tracking-wider uppercase">Team Phantom Thieves</span>
             <button
               onClick={() => setShowComparison(true)}
               className="flex items-center gap-1.5 px-3 py-1 rounded-lg border border-white/20 text-white/70 hover:bg-white/10 hover:border-white/40 transition-all"
