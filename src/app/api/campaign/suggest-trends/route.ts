@@ -1,63 +1,61 @@
+
 import { NextRequest, NextResponse } from "next/server";
 import { callGemini, callGroq } from "@/lib/llm-clients";
 
 export async function POST(req: NextRequest) {
     try {
-        const { campaign, industry, targetAudience, goals, platforms } = await req.json();
+        const { campaign, industry, targetAudience, goals } = await req.json();
 
         if (!campaign) {
             return NextResponse.json({ error: "Campaign description is required" }, { status: 400 });
         }
 
-        const prompt = `You are a trend strategist for marketing campaigns. Analyze this campaign and suggest the best current social media trends and topics they should leverage.
+        const prompt = `You are a viral trend strategist. Analyze this campaign and find specific, rising social media trends to leverage.
 
-CAMPAIGN DETAILS:
-- Campaign: ${campaign}
-${industry ? `- Industry: ${industry}` : ""}
-${targetAudience ? `- Target Audience: ${targetAudience}` : ""}
-${goals ? `- Goals: ${goals}` : ""}
-${platforms?.length ? `- Platforms: ${platforms.join(", ")}` : ""}
+CAMPAIGN: ${campaign}
+INDUSTRY: ${industry || "General"}
+AUDIENCE: ${targetAudience || "General"}
+GOALS: ${goals || "Engagement"}
 
-TASK: Suggest 5 specific, actionable trends this campaign should leverage. For each trend:
-1. Name the trend clearly
-2. Explain WHY it fits this campaign
-3. Give a specific implementation idea
-4. Rate its current momentum (Rising/Peak/Stable/Declining)
+TASK: Identify 4 specific, actionable trends.
+For each trend, provide:
+1. Specific Trend Name (e.g., "Wes Anderson Style", "Tube Girl Effect")
+2. Platform (TikTok, Reels, Twitter, etc.)
+3. Growth Phase (Rising, Peak, Stabilizing)
+4. Viral Potential Score (1-100)
+5. Why it fits (1 short sentence)
+6. Creative Execution (1 short, punchy instruction)
 
-Return JSON in this exact format:
+Return strict JSON:
 {
-  "suggestions": [
+  "strategic_angle": "One sentence punchy strategy hook",
+  "recommended_trends": [
     {
-      "trend": "trend name",
-      "relevance": "why this fits the campaign",
-      "implementation": "specific content/campaign idea",
-      "momentum": "Rising|Peak|Stable|Declining",
-      "confidence": 85
+      "name": "Trend Name",
+      "platform": "TikTok/Reels/etc",
+      "phase": "Rising|Peak|Stabilizing",
+      "score": 85,
+      "reason": "Short reason",
+      "execution": "Short instruction"
     }
-  ],
-  "summary": "One paragraph strategic overview of recommended approach",
-  "timing": "Best time to launch based on trend cycles"
+  ]
 }`;
 
         const messages = [{ role: "user" as const, content: prompt }];
 
-        // Try Gemini first, fallback to Groq
         let response;
         try {
-            response = await callGemini(messages, { jsonMode: true, temperature: 0.7 });
+            response = await callGemini(messages, { jsonMode: true, temperature: 0.8 });
         } catch (e) {
             console.warn("Gemini failed, trying Groq:", e);
-            response = await callGroq(messages, { jsonMode: true, temperature: 0.7 });
+            response = await callGroq(messages, { jsonMode: true, temperature: 0.8 });
         }
 
-        if (!response.content) {
-            throw new Error("No response from LLM");
-        }
+        if (!response.content) throw new Error("No response");
 
         // Parse the JSON response
         let parsed;
         try {
-            // Handle potential markdown code blocks
             let content = response.content;
             if (content.includes("```json")) {
                 content = content.replace(/```json\n?/g, "").replace(/```\n?/g, "");
@@ -66,27 +64,32 @@ Return JSON in this exact format:
         } catch (e) {
             console.error("Failed to parse LLM response:", e);
             return NextResponse.json({
-                suggestions: [
+                strategic_angle: "Leverage AI-driven storytelling for maximum engagement",
+                recommended_trends: [
                     {
-                        trend: "AI-Generated Content",
-                        relevance: "Highly relevant for modern campaigns",
-                        implementation: "Use AI tools to create personalized content at scale",
-                        momentum: "Rising",
-                        confidence: 80
+                        name: "AI Content Studio",
+                        platform: "TikTok",
+                        phase: "Rising",
+                        score: 92,
+                        reason: "Perfect for tech-forward audiences",
+                        execution: "Create behind-the-scenes AI generation videos"
+                    },
+                    {
+                        name: "Silent Reviews",
+                        platform: "Reels",
+                        phase: "Peak",
+                        score: 88,
+                        reason: "High effective for product showcases",
+                        execution: "ASMR style unboxing without speaking"
                     }
-                ],
-                summary: "Based on current trends, focus on authentic, user-generated style content with AI assistance.",
-                timing: "Launch within the next 2 weeks for optimal momentum"
+                ]
             });
         }
 
         return NextResponse.json(parsed);
 
     } catch (error) {
-        console.error("Campaign suggestion error:", error);
-        return NextResponse.json(
-            { error: "Failed to generate trend suggestions" },
-            { status: 500 }
-        );
+        console.error("Error:", error);
+        return NextResponse.json({ error: "Failed to suggest trends" }, { status: 500 });
     }
 }
