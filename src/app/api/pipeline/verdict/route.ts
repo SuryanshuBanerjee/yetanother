@@ -1,18 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
-import { callFeatherless, callGroq, ROLE_PROMPTS } from "@/lib/llm-clients";
+import { callGemini, callFeatherless, callGroq, buildRolePrompt, repairJSON } from "@/lib/llm-clients";
 
 export async function POST(req: NextRequest) {
     try {
-        const { keyword, userRole = "general-user", advancedInferences, basicMetrics } = await req.json();
+        const { keyword, userRole = "general-user", advancedInferences, basicMetrics, newsContext, llmInterpretation, platforms } = await req.json();
 
-        if (!keyword || !advancedInferences) {
+        if (!keyword) {
             return NextResponse.json(
-                { error: "keyword and advancedInferences are required" },
+                { error: "keyword is required" },
                 { status: 400 }
             );
         }
 
-        const roleContext = ROLE_PROMPTS[userRole] || ROLE_PROMPTS["general-user"];
+        const roleContext = buildRolePrompt(userRole, platforms);
+
+        const platformLine = platforms && platforms.length > 0
+            ? `\nThe user is active on ${platforms.join(", ")}. Generate platform-specific pros, cons, and action items for these platforms.`
+            : "";
 
         // Build role-specific framing
         const verdictFraming: Record<string, string> = {
@@ -37,13 +41,19 @@ export async function POST(req: NextRequest) {
 "WATCH" = Flag for monitoring — potential for viral surge or controversy.`,
         };
 
-        // Try Featherless first, fall back to Groq if it fails
-        const llmCall = async (msgs: Parameters<typeof callFeatherless>[0], opts: Parameters<typeof callFeatherless>[1]) => {
+        // Try Gemini first, then Featherless, then Groq
+        const llmCall = async (msgs: Parameters<typeof callGemini>[0], opts: Parameters<typeof callGemini>[1]) => {
             try {
-                return await callFeatherless(msgs, opts);
+                console.log("[Verdict] Trying Gemini...");
+                return await callGemini(msgs, opts);
             } catch (e) {
-                console.log("Featherless failed, falling back to Groq:", e);
-                return await callGroq(msgs, opts);
+                console.log("[Verdict] Gemini failed, trying Featherless:", e instanceof Error ? e.message : String(e));
+                try {
+                    return await callFeatherless(msgs, opts);
+                } catch (e2) {
+                    console.log("[Verdict] Featherless failed, falling back to Groq:", e2 instanceof Error ? e2.message : String(e2));
+                    return await callGroq(msgs, opts);
+                }
             }
         };
 
@@ -57,6 +67,7 @@ ${roleContext}
 
 VERDICT MEANINGS FOR THIS USER:
 ${verdictFraming[userRole] || verdictFraming["general-user"]}
+${platformLine}
 
 You MUST respond in valid JSON with this EXACT structure (no markdown, no code blocks):
 {
@@ -89,14 +100,24 @@ You MUST respond in valid JSON with this EXACT structure (no markdown, no code b
 
 RULES:
 - Always give 3-5 pros and 3-5 cons
-- Be SPECIFIC — use percentages, timeframes, and concrete examples
+- Generate pros/cons that are SPECIFIC to this trend — reference real entities, events, or data. Do NOT say generic things like "has search interest" or "topic recognition". Instead say things like "TikTok engagement on #keyword averaging 2M views" or "Associated with [real event], driving news cycle".
+- Each action item must be concrete and platform-specific. Instead of "Monitor keyword daily", say "Create a TikTok duet with the top viral video about [keyword] within 24 hours".
 - Be DECISIVE — don't hedge. Pick a verdict and commit to it
 - Make every sentence useful for the user's specific role
-- The summary should feel like advice from the smartest person in the room`
+- The summary should feel like advice from the smartest person in the room
+- CRITICAL: If current interest is 80+/100 AND week-over-week growth is strongly positive (>10%), lean toward BUY unless there are severe safety/brand risks
+- If the trend is a major news story with high search volume, it is almost always a BUY for content creators and a WATCH/BUY for others
+- Use the news headlines and trend background below to inform your verdict — real-world context matters more than abstract risk scores`
                 },
                 {
                     role: "user",
                     content: `Give me the final verdict on "${keyword}":
+
+TREND BACKGROUND:
+${llmInterpretation || "No background available — use your own knowledge."}
+
+RECENT NEWS HEADLINES:
+${newsContext || "No news data available — use your own knowledge about current events."}
 
 BASIC METRICS:
 - Current Interest: ${basicMetrics?.metrics?.currentInterest ?? "N/A"}/100
@@ -104,7 +125,7 @@ BASIC METRICS:
 - Week-over-Week Change: ${basicMetrics?.metrics?.weekOverWeekChange ?? 0}%
 - Month-over-Month Change: ${basicMetrics?.metrics?.monthOverMonthChange ?? 0}%
 - Direction: ${basicMetrics?.metrics?.trendDirection ?? "unknown"}
-
+${advancedInferences ? `
 ADVANCED INFERENCES:
 - Delta Velocity: ${advancedInferences.deltaVelocity?.value ?? 0} (${advancedInferences.deltaVelocity?.label ?? "Unknown"})
 - Peak Width: ${advancedInferences.peakWidth?.days ?? 0} days (${advancedInferences.peakWidth?.label ?? "Unknown"})
@@ -120,27 +141,27 @@ TREND TRIADE (Collapse Indicators):
 - Semantic Saturation: ${advancedInferences.trendTriade?.semanticSaturation?.score ?? 50}/100
 - Commercial Exhaustion: ${advancedInferences.trendTriade?.commercialExhaustion?.score ?? 50}/100
 
-Regional Skew: ${advancedInferences.regionalSkew?.dominantRegion ?? "Unknown"} (${advancedInferences.regionalSkew?.concentration ?? 50}% concentrated)
+Regional Skew: ${advancedInferences.regionalSkew?.dominantRegion ?? "Unknown"} (${advancedInferences.regionalSkew?.concentration ?? 50}% concentrated)` : "No advanced inferences available — base verdict on basic metrics and news."}
 
 Now give the final VERDICT. Be decisive.`
                 }
             ],
-            { temperature: 0.7, maxTokens: 2000, jsonMode: true }
+            { temperature: 0.7, maxTokens: 8192, jsonMode: true }
         );
 
         let parsed;
         try {
             parsed = JSON.parse(result.content);
+            console.log(`[Verdict] Parsed OK (provider: ${result.provider})`);
         } catch {
-            const jsonMatch = result.content.match(/\{[\s\S]*\}/);
-            if (jsonMatch) {
-                try {
-                    parsed = JSON.parse(jsonMatch[0]);
-                } catch {
-                    parsed = buildFallbackVerdict(keyword, advancedInferences, userRole);
-                }
-            } else {
-                parsed = buildFallbackVerdict(keyword, advancedInferences, userRole);
+            // Try JSON repair (Gemini thinking tokens can truncate output)
+            console.log("[Verdict] Direct parse failed, trying repair. Content length:", result.content?.length, "starts with:", result.content?.substring(0, 150));
+            try {
+                parsed = JSON.parse(repairJSON(result.content));
+                console.log("[Verdict] JSON repair succeeded");
+            } catch {
+                console.log("[Verdict] Repair failed, using fallback");
+                parsed = buildFallbackVerdict(keyword, advancedInferences || {}, userRole);
             }
         }
 

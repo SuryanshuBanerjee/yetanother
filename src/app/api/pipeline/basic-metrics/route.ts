@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { callGroq, ROLE_PROMPTS } from "@/lib/llm-clients";
+import { callGroq, callGemini, ROLE_PROMPTS } from "@/lib/llm-clients";
 import googleTrends from "google-trends-api";
 import { getTrends, type StoredTrend } from "@/lib/trend-database";
 
@@ -50,7 +50,7 @@ async function fetchInterestOverTime(keyword: string) {
         const parsed = JSON.parse(data);
         return parsed.default?.timelineData || [];
     } catch (e) {
-        console.error("interestOverTime error:", e);
+        console.error("interestOverTime error:", e instanceof Error ? e.message : String(e));
         return [];
     }
 }
@@ -67,7 +67,7 @@ async function fetchInterestByRegion(keyword: string) {
         const parsed = JSON.parse(data);
         return parsed.default?.geoMapData || [];
     } catch (e) {
-        console.error("interestByRegion error:", e);
+        console.error("interestByRegion error:", e instanceof Error ? e.message : String(e));
         return [];
     }
 }
@@ -80,7 +80,7 @@ async function fetchRelatedQueries(keyword: string) {
         const rising = parsed.default?.rankedList?.[1]?.rankedKeyword || [];
         return { top: top.slice(0, 10), rising: rising.slice(0, 10) };
     } catch (e) {
-        console.error("relatedQueries error:", e);
+        console.error("relatedQueries error:", e instanceof Error ? e.message : String(e));
         return { top: [], rising: [] };
     }
 }
@@ -93,7 +93,7 @@ async function fetchRelatedTopics(keyword: string) {
         const rising = parsed.default?.rankedList?.[1]?.rankedKeyword || [];
         return { top: top.slice(0, 10), rising: rising.slice(0, 10) };
     } catch (e) {
-        console.error("relatedTopics error:", e);
+        console.error("relatedTopics error:", e instanceof Error ? e.message : String(e));
         return { top: [], rising: [] };
     }
 }
@@ -179,31 +179,56 @@ function computeMetrics(timeline: TimelinePoint[]) {
 function generateSyntheticTimeline(trend?: StoredTrend): TimelinePoint[] {
     const points: TimelinePoint[] = [];
     const now = new Date();
-    // More organic volatility
-    const volatility = trend ? (trend.score > 80 ? 25 : 15) : 20;
-    const baseValue = trend ? Math.min(85, trend.score) : 50; // Cap base at 85 to allow room for spikes
-    const trendFactor = trend ? trend.change / 20 : 0;
 
-    // Periodicity for more realism (sine wave)
-    const periodicity = Math.random() * 0.1;
+    // Create a realistic narrative: start low, build up, possible peak then settle
+    const currentScore = trend ? Math.min(95, trend.score) : 50;
+    const changeDir = trend ? (trend.change > 0 ? 1 : -1) : 0;
+
+    // Start value: if trend is currently high and rising, it started lower
+    const startValue = changeDir > 0
+        ? Math.max(10, currentScore - 30 - Math.random() * 20)
+        : Math.max(10, currentScore + 10 + Math.random() * 15);
+
+    // Peak somewhere in the timeline
+    const peakDay = changeDir > 0
+        ? Math.floor(70 + Math.random() * 15) // peak near end if rising
+        : Math.floor(20 + Math.random() * 30); // peak earlier if falling
+    const peakValue = Math.min(100, currentScore + 10 + Math.random() * 10);
+
+    // Periodicity for realism
+    const periodicity = 0.05 + Math.random() * 0.08;
     const phaseOffset = Math.random() * 100;
+
+    let walkValue = startValue;
 
     for (let i = 90; i >= 0; i--) {
         const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+        const dayIndex = 90 - i; // 0 = oldest, 90 = newest
 
-        // Random walk
-        const randomVar = (Math.random() - 0.5) * volatility;
-        // Seasonality/Wave
-        const waveVar = Math.sin((i + phaseOffset) * periodicity) * (volatility / 2);
-        // Long term trend
-        const longTermVar = (90 - i) * trendFactor;
+        // Interpolate toward the narrative arc
+        const progress = dayIndex / 90;
+        let targetValue: number;
+        if (dayIndex <= peakDay) {
+            // Rising toward peak
+            const peakProgress = dayIndex / peakDay;
+            targetValue = startValue + (peakValue - startValue) * peakProgress;
+        } else {
+            // After peak, settle toward current score
+            const decayProgress = (dayIndex - peakDay) / (90 - peakDay);
+            targetValue = peakValue + (currentScore - peakValue) * decayProgress;
+        }
 
-        let val = Math.round(baseValue + randomVar + waveVar + longTermVar);
+        // Random walk with mean reversion toward target
+        const randomVar = (Math.random() - 0.5) * 18;
+        const waveVar = Math.sin((dayIndex + phaseOffset) * periodicity) * 8;
+        const meanReversion = (targetValue - walkValue) * 0.15;
 
-        // Add occasional spikes
-        if (Math.random() > 0.95) val += Math.random() * 15;
+        walkValue = walkValue + meanReversion + randomVar * 0.4 + waveVar * 0.3;
 
-        val = Math.max(5, Math.min(100, val)); // Clamp between 5 and 100
+        // Occasional spikes
+        if (Math.random() > 0.93) walkValue += (Math.random() - 0.3) * 20;
+
+        const val = Math.max(5, Math.min(100, Math.round(walkValue)));
 
         points.push({
             time: (date.getTime() / 1000).toString(),
@@ -250,8 +275,8 @@ export async function POST(req: NextRequest) {
         let metrics = computeMetrics(finalTimeline);
 
         // Clamp computed values to sane ranges
-        metrics.weekOverWeekChange = Math.max(-100, Math.min(500, metrics.weekOverWeekChange));
-        metrics.monthOverMonthChange = Math.max(-100, Math.min(500, metrics.monthOverMonthChange));
+        metrics.weekOverWeekChange = Math.max(-95, Math.min(200, metrics.weekOverWeekChange));
+        metrics.monthOverMonthChange = Math.max(-95, Math.min(200, metrics.monthOverMonthChange));
 
         // If we have stored trend data but PyTrends failed, override with stored stats
         if (timeline.length === 0 && storedTrend) {
@@ -276,30 +301,27 @@ export async function POST(req: NextRequest) {
             .slice(0, 15)
             .map((r: RegionData) => ({ name: r.geoName, code: r.geoCode, value: r.value[0] }));
 
-        // Get LLM interpretation (runs after data is ready — Groq is fast ~1s)
+        // Get LLM interpretation — try Groq first (fast), fall back to Gemini
         const roleContext = ROLE_PROMPTS[userRole] || ROLE_PROMPTS["general-user"];
 
-        let llmInterpretation = "";
-        try {
-            const llmResult = await callGroq(
-                [
-                    {
-                        role: "system",
-                        content: `You are TREND PRISM's metrics interpreter.
+        const interpretationMessages: Array<{ role: "system" | "user"; content: string }> = [
+            {
+                role: "system",
+                content: `You are TREND PRISM's trend backgrounder and metrics interpreter.
 
 ${roleContext}
 
-Given raw Google Trends data, provide a sharp, data-driven interpretation.
-If the data seems sparse or generic (e.g. flat 100s, no regions), USE YOUR INTERNAL KNOWLEDGE about the trend ("${keyword}") to fill in the context.
-Identify WHO or WHAT the trend is (Artist, Event, Product, etc.) and explain the likely real-world context behind the data.
+IMPORTANT: Start with 1-2 sentences explaining WHAT this trend is and WHY it's trending right now. Include the real-world event, person, product, or topic driving this trend. This is the most important part — the user needs context about what they're looking at.
 
-Include specific numbers if reliable, otherwise focus on qualitative context.
-Keep it to 3-4 sentences. Be direct and actionable.
+Then follow with 2-3 sentences of sharp, data-driven interpretation of the metrics.
+If the data seems sparse or generic (e.g. flat 100s, no regions), USE YOUR INTERNAL KNOWLEDGE about "${keyword}" to fill in the context.
+
+Keep it to 4-5 sentences total. Be direct and informative.
 Sound intelligent but speak simply — no fluff, no hedging.`
-                    },
-                    {
-                        role: "user",
-                        content: `Interpret these Google Trends metrics for "${keyword}":
+            },
+            {
+                role: "user",
+                content: `Interpret these Google Trends metrics for "${keyword}":
 
 Current Interest Level: ${metrics.currentInterest}/100
 Peak Interest: ${metrics.peakInterest}/100
@@ -312,14 +334,24 @@ Days Since Peak: ${metrics.daysFromPeak}
 Consistency Score: ${metrics.consistencyScore}/100
 Top Regions: ${topRegions.length > 0 ? topRegions.slice(0, 5).map((r: { name: string; value: number }) => `${r.name} (${r.value})`).join(", ") : "No regional data (Likely global or API limit)"}
 Related Rising Queries: ${relatedQueries.rising.length > 0 ? relatedQueries.rising.slice(0, 5).map((q: RelatedItem) => q.query).join(", ") : "none"}`
-                    }
-                ],
-                { temperature: 0.6, maxTokens: 400 }
-            );
-            llmInterpretation = llmResult.content;
-        } catch (e) {
-            console.error("LLM interpretation error:", e);
-            llmInterpretation = `${keyword} shows ${metrics.trendDirection} interest at ${metrics.currentInterest}/100, with ${metrics.weekOverWeekChange}% week-over-week change.`;
+            }
+        ];
+        const interpretationOpts = { temperature: 0.6, maxTokens: 4096 };
+
+        let llmInterpretation = "";
+        try {
+            console.log("[Basic Metrics] Trying Gemini for interpretation...");
+            const geminiResult = await callGemini(interpretationMessages, interpretationOpts);
+            llmInterpretation = geminiResult.content;
+        } catch (geminiErr) {
+            console.log("[Basic Metrics] Gemini failed, trying Groq:", geminiErr instanceof Error ? geminiErr.message : String(geminiErr));
+            try {
+                const groqResult = await callGroq(interpretationMessages, interpretationOpts);
+                llmInterpretation = groqResult.content;
+            } catch (groqErr) {
+                console.error("[Basic Metrics] Groq also failed:", groqErr instanceof Error ? groqErr.message : String(groqErr));
+                llmInterpretation = `${keyword} shows ${metrics.trendDirection} interest at ${metrics.currentInterest}/100, with ${metrics.weekOverWeekChange}% week-over-week change.`;
+            }
         }
 
         const response = {

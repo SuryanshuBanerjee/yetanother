@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { callOpenRouter, callGroq, ROLE_PROMPTS } from "@/lib/llm-clients";
+import { callGemini, callOpenRouter, callGroq, buildRolePrompt, repairJSON } from "@/lib/llm-clients";
 
 export async function POST(req: NextRequest) {
     try {
-        const { keyword, userRole = "general-user", basicMetrics } = await req.json();
+        const { keyword, userRole = "general-user", basicMetrics, platforms } = await req.json();
 
         if (!keyword || !basicMetrics) {
             return NextResponse.json(
@@ -12,15 +12,25 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const roleContext = ROLE_PROMPTS[userRole] || ROLE_PROMPTS["general-user"];
+        const roleContext = buildRolePrompt(userRole, platforms);
 
-        // Try OpenRouter first, fall back to Groq if rate-limited
-        const llmCall = async (messages: Parameters<typeof callOpenRouter>[0], opts: Parameters<typeof callOpenRouter>[1]) => {
+        const platformLine = platforms && platforms.length > 0
+            ? `\nThe user is active on ${platforms.join(", ")}. Tailor your analysis to these platforms.`
+            : "";
+
+        // Try Gemini first, then OpenRouter, then Groq
+        const llmCall = async (messages: Parameters<typeof callGemini>[0], opts: Parameters<typeof callGemini>[1]) => {
             try {
-                return await callOpenRouter(messages, opts);
+                console.log("[Advanced Inferences] Trying Gemini...");
+                return await callGemini(messages, opts);
             } catch (e) {
-                console.log("OpenRouter failed, falling back to Groq:", e);
-                return await callGroq(messages, opts);
+                console.log("[Advanced Inferences] Gemini failed, trying OpenRouter:", e instanceof Error ? e.message : String(e));
+                try {
+                    return await callOpenRouter(messages, opts);
+                } catch (e2) {
+                    console.log("[Advanced Inferences] OpenRouter failed, falling back to Groq:", e2 instanceof Error ? e2.message : String(e2));
+                    return await callGroq(messages, opts);
+                }
             }
         };
 
@@ -33,6 +43,7 @@ export async function POST(req: NextRequest) {
 ${roleContext}
 
 Your job is to take raw Google Trends metrics and produce DEEP, QUANTIFIED INFERENCES that go beyond what the raw data shows. You think like a quant analyst meets cultural anthropologist.
+${platformLine}
 
 You MUST respond in valid JSON with this EXACT structure (no markdown, no code blocks, just raw JSON):
 {
@@ -112,22 +123,21 @@ You know who/what "${keyword}" is. Use that context to estimate the phase, audie
 Generate deep inferences NOW. Be specific with numbers.`
                 }
             ],
-            { temperature: 0.6, maxTokens: 2500, jsonMode: true }
+            { temperature: 0.6, maxTokens: 8192, jsonMode: true }
         );
 
         let parsed;
         try {
             parsed = JSON.parse(result.content);
+            console.log(`[Advanced Inferences] Parsed OK (provider: ${result.provider})`);
         } catch {
-            // Try to extract JSON from the response
-            const jsonMatch = result.content.match(/\{[\s\S]*\}/);
-            if (jsonMatch) {
-                try {
-                    parsed = JSON.parse(jsonMatch[0]);
-                } catch {
-                    parsed = buildFallbackInferences(keyword, basicMetrics);
-                }
-            } else {
+            // Try JSON repair (Gemini thinking tokens can truncate output)
+            console.log("[Advanced Inferences] Direct parse failed, trying repair. Content length:", result.content?.length, "starts with:", result.content?.substring(0, 150));
+            try {
+                parsed = JSON.parse(repairJSON(result.content));
+                console.log("[Advanced Inferences] JSON repair succeeded");
+            } catch {
+                console.log("[Advanced Inferences] Repair failed, using fallback");
                 parsed = buildFallbackInferences(keyword, basicMetrics);
             }
         }
@@ -183,11 +193,21 @@ function buildFallbackInferences(keyword: string, basicMetrics: Record<string, u
             semanticSaturation: { score: 45, indicators: ["Increasing usage variety"], detail: "Meaning is beginning to dilute." },
             commercialExhaustion: { score: 40, indicators: ["Some brand adoption"], detail: "Commercial adoption is moderate." },
         },
-        overallRiskScore: Math.round(100 - current + Math.abs(wow)),
+        // Risk: high interest + positive momentum = LOW risk; low interest + negative momentum = HIGH risk
+        overallRiskScore: Math.max(5, Math.min(95, Math.round(
+            wow > 0
+                ? Math.max(10, 80 - current * 0.6 - Math.min(wow, 50) * 0.3)  // Surging = lower risk
+                : Math.min(95, 100 - current + Math.abs(wow) * 0.5)            // Falling = higher risk
+        ))),
         phase: current > 80 ? "Peak" : current > 60 ? "Growth" : current > 40 ? "Saturation" : "Decay",
         velocity: wow > 10 ? "Accelerating" : wow > 0 ? "Stable" : wow > -10 ? "Decelerating" : "Freefall",
         timeToCollapse: current > 60 ? "3+ weeks" : current > 40 ? "1-2 weeks" : "48-72 hours",
-        collapseProbability: Math.min(99, Math.round(100 - current + Math.abs(wow) * 0.5)),
+        // Collapse probability: surging trends have LOW collapse chance; falling trends have HIGH
+        collapseProbability: Math.max(5, Math.min(95, Math.round(
+            wow > 0
+                ? Math.max(5, 60 - current * 0.4 - Math.min(wow, 50) * 0.3)   // Surging = low collapse
+                : Math.min(95, 100 - current + Math.abs(wow) * 0.5)            // Falling = high collapse
+        ))),
         llmAnalysis: `${keyword} is at ${current}/100 interest, ${wow > 0 ? "up" : "down"} ${Math.abs(wow)}% week-over-week. Peak was ${peak}/100, ${daysFromPeak} days ago.`,
     };
 }

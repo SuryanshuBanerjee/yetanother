@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import TrendDashboard from "@/components/TrendDashboard";
 import { RoleProvider } from "@/components/RoleSelector";
@@ -32,27 +32,47 @@ function Dashboard() {
   const [currentStep, setCurrentStep] = useState<AnalysisStep | null>(null);
   const [completedSteps, setCompletedSteps] = useState<AnalysisStep[]>([]);
 
+  const dashboardRef = useRef<HTMLDivElement>(null);
+
   const quizRole = (userData?.role as string) || "analyst";
   const userRole = ROLE_MAP[quizRole] || "general-user";
   const userName = (userData?.name as string) || "User";
+  const platforms = (userData?.platforms as string[]) || [];
+
+  // Scroll to top when dashboard data loads
+  useEffect(() => {
+    if (data && dashboardRef.current) {
+      dashboardRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [data]);
 
   const simulateProgress = () => {
-    // Simulate pipeline progress (the actual API runs these in sequence)
-    const steps: AnalysisStep[] = ["validate", "metrics", "inferences", "verdict"];
-    let stepIndex = 0;
+    // Simulate pipeline progress matching actual timing:
+    // validate (~0.5s) → metrics (~2s) → inferences+verdict parallel (~5-12s)
+    const timers: ReturnType<typeof setTimeout>[] = [];
 
-    setCurrentStep(steps[0]);
+    setCurrentStep("validate");
     setCompletedSteps([]);
 
-    const interval = setInterval(() => {
-      if (stepIndex < steps.length - 1) {
-        setCompletedSteps((prev) => [...prev, steps[stepIndex]]);
-        stepIndex++;
-        setCurrentStep(steps[stepIndex]);
-      }
-    }, 2500); // ~2.5s per step
+    // Step 1: validate completes fast
+    timers.push(setTimeout(() => {
+      setCompletedSteps(["validate"]);
+      setCurrentStep("metrics");
+    }, 800));
 
-    return () => clearInterval(interval);
+    // Step 2: metrics takes ~2-3s
+    timers.push(setTimeout(() => {
+      setCompletedSteps(["validate", "metrics"]);
+      setCurrentStep("inferences");
+    }, 3500));
+
+    // Step 3: inferences + verdict run in parallel, show inferences first
+    timers.push(setTimeout(() => {
+      setCompletedSteps(["validate", "metrics", "inferences"]);
+      setCurrentStep("verdict");
+    }, 8000));
+
+    return () => timers.forEach(t => clearTimeout(t));
   };
 
   const analyzeKeyword = async (keyword: string) => {
@@ -72,7 +92,7 @@ function Dashboard() {
       const res = await fetch("/api/trends/decay", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ keyword, userRole }),
+        body: JSON.stringify({ keyword, userRole, platforms }),
       });
 
       const result = await res.json();
@@ -211,6 +231,7 @@ function Dashboard() {
               </motion.div>
             ) : data ? (
               <motion.div
+                ref={dashboardRef}
                 key="report"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

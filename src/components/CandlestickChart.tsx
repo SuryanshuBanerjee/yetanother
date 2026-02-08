@@ -14,9 +14,10 @@ interface CandlestickChartProps {
     data: CandlestickData[];
     keyword: string;
     userRole?: string;
+    aiExplanation?: string;
 }
 
-export default function CandlestickChart({ data, keyword, userRole = "general-user" }: CandlestickChartProps) {
+export default function CandlestickChart({ data, keyword, userRole = "general-user", aiExplanation }: CandlestickChartProps) {
     const chartData = useMemo(() => {
         if (!data || data.length === 0) return [];
         return data.slice(-30); // Last 30 days
@@ -189,6 +190,8 @@ export default function CandlestickChart({ data, keyword, userRole = "general-us
                     <span className="font-bold text-purple-400">{Math.round(ma30[ma30.length - 1] || 0)}</span>
                 </div>
             </div>
+
+            {/* AI Insight moved to About section to avoid duplication */}
         </motion.div>
     );
 }

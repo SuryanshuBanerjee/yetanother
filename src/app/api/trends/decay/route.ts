@@ -4,7 +4,7 @@ import { DecayEngine } from "@/lib/decayEngine";
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { keyword, userRole = "general-user" } = body;
+        const { keyword, userRole = "general-user", platforms } = body;
 
         if (!keyword) {
             return NextResponse.json({ error: "Keyword required" }, { status: 400 });
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
             const res = await fetch(`${baseUrl}/api/pipeline/full`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ keyword, userRole }),
+                body: JSON.stringify({ keyword, userRole, platforms }),
             });
 
             if (res.ok) {

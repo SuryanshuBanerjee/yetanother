@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { callGroq, ROLE_PROMPTS } from "@/lib/llm-clients";
+import { callGemini, callGroq, ROLE_PROMPTS } from "@/lib/llm-clients";
 import { getTrends } from "@/lib/trend-database";
 
 export async function POST(req: NextRequest) {
@@ -28,11 +28,10 @@ export async function POST(req: NextRequest) {
 
         const roleContext = ROLE_PROMPTS[userRole] || ROLE_PROMPTS["general-user"];
 
-        const result = await callGroq(
-            [
-                {
-                    role: "system",
-                    content: `You are TREND PRISM's validation engine. Your job is to determine if a search term is a legitimate trend worth analyzing.
+        const validationMessages: Array<{ role: "system" | "user"; content: string }> = [
+            {
+                role: "system",
+                content: `You are TREND PRISM's validation engine. Your job is to determine if a search term is a legitimate trend worth analyzing.
 
 ${roleContext}
 
@@ -53,14 +52,23 @@ You MUST respond in valid JSON with this exact structure:
   "trendName": "string - the cleaned/proper name for this trend",
   "suggestedKeywords": ["array", "of", "related", "search", "terms"]
 }`
-                },
-                {
-                    role: "user",
-                    content: `Validate this search term as a trend: "${keyword}"`
-                }
-            ],
-            { temperature: 0.3, maxTokens: 500, jsonMode: true }
-        );
+            },
+            {
+                role: "user",
+                content: `Validate this search term as a trend: "${keyword}"`
+            }
+        ];
+        const validationOpts = { temperature: 0.3, maxTokens: 1000, jsonMode: true };
+
+        // Try Gemini first, fall back to Groq
+        let result;
+        try {
+            console.log("[Validate] Trying Gemini...");
+            result = await callGemini(validationMessages, validationOpts);
+        } catch (geminiErr) {
+            console.log("[Validate] Gemini failed, trying Groq:", geminiErr instanceof Error ? geminiErr.message : String(geminiErr));
+            result = await callGroq(validationMessages, validationOpts);
+        }
 
         let parsed;
         try {

@@ -1,27 +1,135 @@
 [
   {
-    "keyword": "barcelona - r.c.d. mallorca",
-    "symbol": "#BRM",
-    "score": 72,
-    "change": 18.5,
-    "volume": "200K",
-    "risk": "low",
-    "category": "Sports",
+    "keyword": "ufc",
+    "symbol": "#UFC",
+    "score": 29,
+    "change": -24,
+    "volume": "57.0K",
+    "risk": "critical",
+    "category": "Tech",
+    "phase": "Decay",
+    "lastSearched": "2026-02-08T00:27:30.133Z",
+    "searchCount": 1
+  },
+  {
+    "keyword": "trump",
+    "symbol": "#TRUMP",
+    "score": 26,
+    "change": 23,
+    "volume": "51.0K",
+    "risk": "critical",
+    "category": "Politics",
+    "phase": "Growth",
+    "lastSearched": "2026-02-08T00:25:48.901Z",
+    "searchCount": 1
+  },
+  {
+    "keyword": "epstein",
+    "symbol": "#EPSTE",
+    "score": 46,
+    "change": 200,
+    "volume": "91.0K",
+    "risk": "high",
+    "category": "Politics",
+    "phase": "Growth",
+    "lastSearched": "2026-02-08T00:24:53.238Z",
+    "searchCount": 6
+  },
+  {
+    "keyword": "pokemon",
+    "symbol": "#POKEM",
+    "score": 50,
+    "change": 2,
+    "volume": "100.0K",
+    "risk": "medium",
+    "category": "Entertainment",
+    "phase": "Saturation",
+    "lastSearched": "2026-02-08T00:37:09.429Z",
+    "searchCount": 5
+  },
+  {
+    "keyword": "grammy winners 2026",
+    "symbol": "#GW",
+    "score": 15,
+    "change": 200,
+    "volume": "2.0K",
+    "risk": "critical",
+    "category": "Music",
+    "phase": "Decay",
+    "lastSearched": "2026-02-08T00:11:16.605Z",
+    "searchCount": 2
+  },
+  {
+    "keyword": "bad bunny adidas",
+    "symbol": "#BBA",
+    "score": 55,
+    "change": 185,
+    "volume": "90.0K",
+    "risk": "medium",
+    "category": "Fashion & Celebrity Collaboration",
     "phase": "Peak",
-    "lastSearched": "2026-02-07T21:14:32.153Z",
-    "searchCount": 3
+    "lastSearched": "2026-02-08T00:09:22.357Z",
+    "searchCount": 1
   },
   {
     "keyword": "bad bunny",
     "symbol": "#BB",
-    "score": 15,
-    "change": 316,
-    "volume": "64.0K",
-    "risk": "critical",
+    "score": 65,
+    "change": 200,
+    "volume": "100.0K",
+    "risk": "medium",
     "category": "Entertainment",
     "phase": "Peak",
-    "lastSearched": "2026-02-07T21:22:50.266Z",
-    "searchCount": 8
+    "lastSearched": "2026-02-08T00:08:16.348Z",
+    "searchCount": 10
+  },
+  {
+    "keyword": "fc barcelona",
+    "symbol": "#FB",
+    "score": 30,
+    "change": -11,
+    "volume": "14.0K",
+    "risk": "high",
+    "category": "Sports",
+    "phase": "Decay",
+    "lastSearched": "2026-02-08T00:04:51.771Z",
+    "searchCount": 1
+  },
+  {
+    "keyword": "मौसम",
+    "symbol": "#",
+    "score": 25,
+    "change": -29,
+    "volume": "50.0K",
+    "risk": "critical",
+    "category": "Trending",
+    "phase": "Saturation",
+    "lastSearched": "2026-02-07T23:47:09.018Z",
+    "searchCount": 3
+  },
+  {
+    "keyword": "barcelona - r.c.d. mallorca",
+    "symbol": "#BRM",
+    "score": 15,
+    "change": 200,
+    "volume": "100.0K",
+    "risk": "critical",
+    "category": "Sports",
+    "phase": "Peak",
+    "lastSearched": "2026-02-07T22:55:40.626Z",
+    "searchCount": 5
+  },
+  {
+    "keyword": "copa del rey",
+    "symbol": "#CDR",
+    "score": 50,
+    "change": 500,
+    "volume": "10.0K",
+    "risk": "medium",
+    "category": "Trending",
+    "phase": "Saturation",
+    "lastSearched": "2026-02-07T21:35:38.347Z",
+    "searchCount": 1
   },
   {
     "keyword": "new zealand vs usa",
@@ -96,18 +204,6 @@
     "searchCount": 0
   },
   {
-    "keyword": "grammy winners 2026",
-    "symbol": "#GW",
-    "score": 15,
-    "change": 500,
-    "volume": "2.0K",
-    "risk": "critical",
-    "category": "Music",
-    "phase": "Decay",
-    "lastSearched": "2026-02-07T21:25:04.140Z",
-    "searchCount": 1
-  },
-  {
     "keyword": "alerta de lluvias intensas",
     "symbol": "#ADLI",
     "score": 74,
@@ -156,18 +252,6 @@
     "searchCount": 0
   },
   {
-    "keyword": "मौसम",
-    "symbol": "#",
-    "score": 50,
-    "change": -29,
-    "volume": "40.0K",
-    "risk": "critical",
-    "category": "Trending",
-    "phase": "Saturation",
-    "lastSearched": "2026-02-07T21:31:43.762Z",
-    "searchCount": 2
-  },
-  {
     "keyword": "bitcoin price",
     "symbol": "#BP",
     "score": 61,
@@ -178,18 +262,6 @@
     "phase": "Peak",
     "lastSearched": "2026-02-07T18:45:39.815Z",
     "searchCount": 0
-  },
-  {
-    "keyword": "copa del rey",
-    "symbol": "#CDR",
-    "score": 50,
-    "change": 500,
-    "volume": "10.0K",
-    "risk": "medium",
-    "category": "Trending",
-    "phase": "Saturation",
-    "lastSearched": "2026-02-07T21:35:38.347Z",
-    "searchCount": 1
   },
   {
     "keyword": "albacete - barcelona",
@@ -480,18 +552,6 @@
     "searchCount": 0
   },
   {
-    "keyword": "ufc",
-    "symbol": "#UFC",
-    "score": 20,
-    "change": -1.4,
-    "volume": "500K",
-    "risk": "critical",
-    "category": "Tech",
-    "phase": "Decay",
-    "lastSearched": "2026-02-07T18:45:39.815Z",
-    "searchCount": 0
-  },
-  {
     "keyword": "weather tomorrow",
     "symbol": "#WT",
     "score": 20,
@@ -535,66 +595,6 @@
     "volume": "10M",
     "risk": "low",
     "category": "Entertainment",
-    "phase": "Growth",
-    "lastSearched": "2026-02-07T18:45:39.814Z",
-    "searchCount": 0
-  },
-  {
-    "keyword": "icc men's t20 world cup",
-    "symbol": "#IMTWC",
-    "score": 98,
-    "change": 32.8,
-    "volume": "5M",
-    "risk": "low",
-    "category": "Tech",
-    "phase": "Growth",
-    "lastSearched": "2026-02-07T18:45:39.814Z",
-    "searchCount": 0
-  },
-  {
-    "keyword": "india u-19 vs england u-19",
-    "symbol": "#IUVEU",
-    "score": 100,
-    "change": 24.4,
-    "volume": "5M",
-    "risk": "low",
-    "category": "Tech",
-    "phase": "Growth",
-    "lastSearched": "2026-02-07T18:45:39.814Z",
-    "searchCount": 0
-  },
-  {
-    "keyword": "juegos olímpicos de invierno 2026",
-    "symbol": "#JODI",
-    "score": 96,
-    "change": 31.3,
-    "volume": "2M",
-    "risk": "low",
-    "category": "Trending",
-    "phase": "Growth",
-    "lastSearched": "2026-02-07T18:45:39.814Z",
-    "searchCount": 0
-  },
-  {
-    "keyword": "jeux olympiques d'hiver 2026",
-    "symbol": "#JOD",
-    "score": 84,
-    "change": 30.8,
-    "volume": "2M",
-    "risk": "low",
-    "category": "Tech",
-    "phase": "Growth",
-    "lastSearched": "2026-02-07T18:45:39.814Z",
-    "searchCount": 0
-  },
-  {
-    "keyword": "netherlands vs pakistan",
-    "symbol": "#NVP",
-    "score": 87,
-    "change": 19.7,
-    "volume": "2M",
-    "risk": "low",
-    "category": "Tech",
     "phase": "Growth",
     "lastSearched": "2026-02-07T18:45:39.814Z",
     "searchCount": 0

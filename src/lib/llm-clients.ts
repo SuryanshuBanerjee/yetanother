@@ -1,4 +1,4 @@
-// LLM Client wrappers for Groq, OpenRouter, and Featherless
+// LLM Client wrappers for Groq, Gemini, OpenRouter, and Featherless
 // All use OpenAI-compatible chat completions API
 
 interface ChatMessage {
@@ -58,15 +58,110 @@ export async function callGroq(
 }
 
 // ============================================================
-// OPENROUTER - Advanced Inferences (Deep pattern analysis)
+// GEMINI - Google's Gemini via OpenAI-compatible endpoint
+// Primary model for heavy analysis (advanced inferences + verdict)
+// ============================================================
+export async function callGemini(
+    messages: ChatMessage[],
+    options: { temperature?: number; maxTokens?: number; jsonMode?: boolean } = {}
+): Promise<LLMResponse> {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) throw new Error("GEMINI_API_KEY not set");
+
+    // Gemini 2.5 Flash uses internal "thinking tokens" (~2000-3000) that count toward
+    // max_tokens. Set high default so actual JSON output doesn't get truncated.
+    const body: Record<string, unknown> = {
+        model: "gemini-2.5-flash",
+        messages,
+        temperature: options.temperature ?? 0.7,
+        max_tokens: options.maxTokens ?? 8192,
+    };
+
+    if (options.jsonMode) {
+        body.response_format = { type: "json_object" };
+    }
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 30000); // 30s timeout
+
+    try {
+        const res = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${apiKey}`,
+            },
+            body: JSON.stringify(body),
+            signal: controller.signal,
+        });
+
+        if (!res.ok) {
+            const err = await res.text();
+            throw new Error(`Gemini API error (${res.status}): ${err}`);
+        }
+
+        const data = await res.json();
+        return {
+            content: data.choices[0]?.message?.content || "",
+            model: data.model || "gemini-2.5-flash",
+            provider: "gemini",
+            tokensUsed: data.usage?.total_tokens,
+        };
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
+/**
+ * Attempt to repair truncated JSON (missing closing braces/brackets).
+ * Gemini 2.5 Flash sometimes returns JSON cut short due to thinking token budget.
+ */
+export function repairJSON(raw: string): string {
+    // Strip markdown code fences if present
+    let s = raw.trim();
+    if (s.startsWith("```json")) s = s.slice(7);
+    else if (s.startsWith("```")) s = s.slice(3);
+    if (s.endsWith("```")) s = s.slice(0, -3);
+    s = s.trim();
+
+    // Try parsing as-is first
+    try { JSON.parse(s); return s; } catch { /* continue */ }
+
+    // Truncate at last complete value (find last comma or colon-value boundary)
+    // Then close all open braces/brackets
+    // First, remove any trailing incomplete string value
+    s = s.replace(/,\s*"[^"]*$/, "");      // trailing incomplete key
+    s = s.replace(/:\s*"[^"]*$/, ': ""');   // trailing incomplete string value
+    s = s.replace(/,\s*$/, "");              // trailing comma
+
+    // Count open/close braces and brackets
+    let braces = 0, brackets = 0;
+    let inString = false, escape = false;
+    for (const ch of s) {
+        if (escape) { escape = false; continue; }
+        if (ch === "\\") { escape = true; continue; }
+        if (ch === '"') { inString = !inString; continue; }
+        if (inString) continue;
+        if (ch === "{") braces++;
+        if (ch === "}") braces--;
+        if (ch === "[") brackets++;
+        if (ch === "]") brackets--;
+    }
+
+    // Append missing closers
+    while (brackets > 0) { s += "]"; brackets--; }
+    while (braces > 0) { s += "}"; braces--; }
+
+    return s;
+}
+
+// ============================================================
+// OPENROUTER - Fallback for Advanced Inferences
 // Tries multiple free models with retry on rate-limit
 // ============================================================
 const OPENROUTER_MODELS = [
-    "google/gemini-2.0-flash-exp:free",
-    "arcee-ai/trinity-mini:free",
-    "mistralai/mistral-small-3.1-24b-instruct:free",
     "meta-llama/llama-3.3-70b-instruct:free",
-    "deepseek/deepseek-r1:free",
+    "mistralai/mistral-small-3.1-24b-instruct:free",
 ];
 
 export async function callOpenRouter(
@@ -91,6 +186,9 @@ export async function callOpenRouter(
                 body.response_format = { type: "json_object" };
             }
 
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), 15000); // 15s per model
+
             const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                 method: "POST",
                 headers: {
@@ -100,7 +198,9 @@ export async function callOpenRouter(
                     "X-Title": "TREND PRISM",
                 },
                 body: JSON.stringify(body),
+                signal: controller.signal,
             });
+            clearTimeout(timer);
 
             if (res.status === 429) {
                 lastError = `Rate limited on ${model}`;
@@ -140,8 +240,10 @@ export async function callOpenRouter(
 }
 
 // ============================================================
-// FEATHERLESS - Verdict & Pros/Cons Generation
+// FEATHERLESS - Verdict fallback
 // ============================================================
+const FEATHERLESS_TIMEOUT = 12000; // 12 seconds max
+
 export async function callFeatherless(
     messages: ChatMessage[],
     options: { temperature?: number; maxTokens?: number; jsonMode?: boolean } = {}
@@ -150,7 +252,7 @@ export async function callFeatherless(
     if (!apiKey) throw new Error("FEATHERLESS_API_KEY not set");
 
     const body: Record<string, unknown> = {
-        model: "Qwen/Qwen2.5-7B-Instruct",
+        model: "moonshotai/Kimi-K2.5",
         messages,
         temperature: options.temperature ?? 0.7,
         max_tokens: options.maxTokens ?? 3000,
@@ -160,27 +262,35 @@ export async function callFeatherless(
         body.response_format = { type: "json_object" };
     }
 
-    const res = await fetch("https://api.featherless.ai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify(body),
-    });
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), FEATHERLESS_TIMEOUT);
 
-    if (!res.ok) {
-        const err = await res.text();
-        throw new Error(`Featherless API error (${res.status}): ${err}`);
+    try {
+        const res = await fetch("https://api.featherless.ai/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${apiKey}`,
+            },
+            body: JSON.stringify(body),
+            signal: controller.signal,
+        });
+
+        if (!res.ok) {
+            const err = await res.text();
+            throw new Error(`Featherless API error (${res.status}): ${err}`);
+        }
+
+        const data = await res.json();
+        return {
+            content: data.choices[0]?.message?.content || "",
+            model: data.model,
+            provider: "featherless",
+            tokensUsed: data.usage?.total_tokens,
+        };
+    } finally {
+        clearTimeout(timer);
     }
-
-    const data = await res.json();
-    return {
-        content: data.choices[0]?.message?.content || "",
-        model: data.model,
-        provider: "featherless",
-        tokensUsed: data.usage?.total_tokens,
-    };
 }
 
 // ============================================================
@@ -211,6 +321,33 @@ Use language like: "engagement ceiling", "platform risk", "content velocity", "m
 Frame everything as: Should the platform promote this trend, throttle it, or let it run organically?
 Give specific engagement metrics, safety scores, and platform-level recommendations.`,
 };
+
+// Build a role prompt with platform-specific context appended
+export function buildRolePrompt(userRole: string, platforms?: string[]): string {
+    const base = ROLE_PROMPTS[userRole] || ROLE_PROMPTS["general-user"];
+    if (!platforms || platforms.length === 0) return base;
+
+    const platformAdvice: Record<string, string> = {
+        tiktok: "short-form video strategy, trending sounds, duets, and hashtag challenges for TikTok",
+        instagram: "visual storytelling, Reels, carousel posts, and Stories engagement for Instagram",
+        youtube: "long-form video SEO, Shorts strategy, thumbnail optimization, and watch time for YouTube",
+        twitter: "real-time commentary, threads, quote tweets, and trending hashtag participation for X/Twitter",
+        x: "real-time commentary, threads, quote tweets, and trending hashtag participation for X/Twitter",
+        reddit: "community engagement, subreddit targeting, and authentic discussion for Reddit",
+        linkedin: "professional thought leadership, industry insights, and B2B content for LinkedIn",
+        facebook: "community groups, shareable content, and broad-audience engagement for Facebook",
+        snapchat: "ephemeral content, AR lenses, and Gen-Z engagement for Snapchat",
+        pinterest: "visual search optimization, pin strategy, and evergreen content for Pinterest",
+    };
+
+    const platformContext = platforms
+        .map(p => platformAdvice[p.toLowerCase()] || `platform-specific strategy for ${p}`)
+        .join("; ");
+
+    return `${base}
+
+PLATFORM CONTEXT: The user is active on ${platforms.join(", ")}. Tailor your advice to these platforms — mention ${platformContext}.`;
+}
 
 // Map onboarding quiz roles to our role keys
 export function mapQuizRole(quizRole: string): string {

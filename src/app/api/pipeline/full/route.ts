@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { addOrUpdateTrend } from "@/lib/trend-database";
+import { fetchNews } from "@/lib/news-fetcher";
 
 // Full pipeline orchestrator:
-// Step 1: Validate (Groq) + Basic Metrics (PyTrends + Groq) — in parallel
-// Step 2: Advanced Inferences (OpenRouter) — needs basic metrics
-// Step 3: Verdict (Featherless) — needs advanced inferences
+// Step 1: Validate (Groq) + Basic Metrics (PyTrends + Groq) + News — in parallel
+// Step 2+3: Advanced Inferences (Gemini) + Verdict (Gemini) — in parallel
 // Then: Map everything to DecayAnalysis for frontend compatibility
 
 async function callInternalAPI(baseUrl: string, path: string, body: Record<string, unknown>) {
@@ -276,7 +276,7 @@ function mapToDecayAnalysis(
 
 export async function POST(req: NextRequest) {
     try {
-        const { keyword, userRole = "general-user" } = await req.json();
+        const { keyword, userRole = "general-user", platforms } = await req.json();
 
         if (!keyword) {
             return NextResponse.json({ error: "Keyword required" }, { status: 400 });
@@ -288,14 +288,20 @@ export async function POST(req: NextRequest) {
         const startTime = Date.now();
 
         // ============================================================
-        // STEP 1: Validation + Basic Metrics (PARALLEL)
-        // Groq validates the term, PyTrends + Groq fetch metrics
+        // STEP 1: Validation + Basic Metrics + News (ALL PARALLEL)
+        // Groq validates, PyTrends + Groq fetch metrics, news fetched
         // ============================================================
-        const [validation, basicMetrics] = await Promise.all([
+        const [validation, basicMetrics, newsResult] = await Promise.all([
             callInternalAPI(baseUrl, "/api/pipeline/validate", { keyword, userRole }),
             callInternalAPI(baseUrl, "/api/pipeline/basic-metrics", { keyword, userRole }),
+            fetchNews(keyword),
         ]);
         const step1End = Date.now();
+
+        // Build news context string for LLM prompts
+        const newsContext = newsResult.headlines.length > 0
+            ? newsResult.headlines.slice(0, 5).map((h: string, i: number) => `${i + 1}. ${h}`).join("\n")
+            : "";
 
         // Check validation
         if (!validation.isValid) {
@@ -307,26 +313,150 @@ export async function POST(req: NextRequest) {
         }
 
         // ============================================================
-        // STEP 2: Advanced Inferences (needs basic metrics)
-        // OpenRouter deep analysis
+        // STEP 2+3: Advanced Inferences + Verdict (PARALLEL)
+        // Both only need basicMetrics + news — no sequential dependency
+        // Gracefully degrade if either fails (rate limits, etc.)
         // ============================================================
-        const advancedInferences = await callInternalAPI(
-            baseUrl,
-            "/api/pipeline/advanced-inferences",
-            { keyword, userRole, basicMetrics }
-        );
+        const [advancedResult, verdictResult] = await Promise.allSettled([
+            callInternalAPI(baseUrl, "/api/pipeline/advanced-inferences", {
+                keyword, userRole, basicMetrics, newsContext, platforms,
+            }),
+            callInternalAPI(baseUrl, "/api/pipeline/verdict", {
+                keyword, userRole, basicMetrics, newsContext, platforms,
+                llmInterpretation: basicMetrics.llmInterpretation || "",
+            }),
+        ]);
+
+        const metrics = (basicMetrics.metrics || {}) as Record<string, number | string>;
+        const currentInterestFallback = (metrics.currentInterest as number) || 50;
+        const wowFallback = (metrics.weekOverWeekChange as number) || 0;
+        const volatilityFallback = (metrics.volatility as number) || 0;
+        const directionFallback = (metrics.trendDirection as string) || "stable";
+
+        const advancedInferences = advancedResult.status === "fulfilled"
+            ? advancedResult.value
+            : (() => {
+                // Compute data-driven triade scores instead of hardcoded 40/40/35
+                const fragScore = Math.max(10, Math.min(90, Math.round(
+                    100 - currentInterestFallback + volatilityFallback * 0.5 + Math.abs(wowFallback) * 0.3
+                )));
+                const satScore = Math.max(10, Math.min(90, Math.round(
+                    currentInterestFallback * 0.6 + volatilityFallback * 0.4
+                )));
+                const exhScore = Math.max(10, Math.min(90, Math.round(
+                    (currentInterestFallback > 70 ? currentInterestFallback * 0.7 : 20) + volatilityFallback * 0.2
+                )));
+
+                const fragIndicators = [
+                    `${keyword} WoW change: ${wowFallback > 0 ? "+" : ""}${wowFallback}%`,
+                    `Volatility index: ${volatilityFallback.toFixed(1)}%`,
+                    `Direction: ${directionFallback}`,
+                ];
+                const satIndicators = [
+                    `Current interest: ${currentInterestFallback}/100`,
+                    `${currentInterestFallback > 70 ? "High saturation pressure" : "Moderate content density"}`,
+                    `${volatilityFallback > 20 ? "Rapid meaning shifts detected" : "Stable semantic field"}`,
+                ];
+                const exhIndicators = [
+                    `${currentInterestFallback > 70 ? "Heavy brand adoption likely" : "Limited commercial presence"}`,
+                    `Peak attention at ${(metrics.peakInterest as number) || 100}/100`,
+                    `${wowFallback < -5 ? "Post-peak commercial decline" : "Active commercial window"}`,
+                ];
+
+                return {
+                    phase: currentInterestFallback > 80 ? "Peak" : currentInterestFallback > 50 ? "Growth" : "Saturation",
+                    velocity: wowFallback > 10 ? "Accelerating" : wowFallback > 0 ? "Stable" : "Decelerating",
+                    overallRiskScore: Math.round(100 - currentInterestFallback + Math.abs(wowFallback)),
+                    collapseProbability: Math.min(99, Math.round(100 - currentInterestFallback)),
+                    timeToCollapse: currentInterestFallback > 60 ? "3+ weeks" : "1-2 weeks",
+                    trendTriade: {
+                        communityFragmentation: { score: fragScore, indicators: fragIndicators, detail: `${keyword} community shows ${fragScore > 60 ? "significant" : fragScore > 30 ? "moderate" : "low"} fragmentation based on ${Math.abs(wowFallback)}% weekly shift and ${volatilityFallback.toFixed(1)}% volatility.` },
+                        semanticSaturation: { score: satScore, indicators: satIndicators, detail: `Semantic field for ${keyword} is ${satScore > 60 ? "heavily saturated" : satScore > 30 ? "moderately used" : "relatively fresh"} at ${currentInterestFallback}/100 interest.` },
+                        commercialExhaustion: { score: exhScore, indicators: exhIndicators, detail: `Commercial activity around ${keyword} is ${exhScore > 60 ? "extensive — brands are heavily invested" : exhScore > 30 ? "moderate — some brand adoption" : "minimal — largely organic"}.` },
+                    },
+                    deltaVelocity: { value: wowFallback, label: wowFallback > 10 ? "Accelerating" : "Stable", detail: `${wowFallback}% weekly change.` },
+                    peakWidth: { days: 14, label: "Medium Lifespan", detail: "Moderate duration trend." },
+                    decayHalfLife: { days: 14, label: "Moderate Decay", detail: "Standard decay pattern." },
+                    llmAnalysis: `${keyword} shows ${currentInterestFallback}/100 interest with ${wowFallback}% weekly change. Analysis generated from basic metrics due to rate limits.`,
+                    _fallback: true,
+                };
+            })();
+
+        const verdict = verdictResult.status === "fulfilled"
+            ? verdictResult.value
+            : (() => {
+                const ci = currentInterestFallback;
+                const wow = wowFallback;
+                const verdictVal = ci > 70 && wow > 5 ? "BUY" : ci > 50 ? "HOLD" : "WATCH";
+                const category = (validation.category as string) || "Trending";
+                const firstHeadline = newsResult.headlines[0] || "";
+                const platformPrimary = platforms?.[0] || "social media";
+
+                return {
+                    verdict: verdictVal,
+                    confidence: Math.round(40 + ci * 0.3),
+                    summary: `${keyword} at ${ci}/100 interest. ${wow > 0 ? "Trending up" : "Trending down"} ${Math.abs(wow)}% week-over-week.`,
+                    pros: [
+                        { title: `${keyword} at ${ci}/100`, detail: `Currently ${wow > 0 ? "gaining" : "losing"} momentum with ${Math.abs(wow)}% weekly ${wow > 0 ? "growth" : "decline"}.`, impact: ci },
+                        { title: `${category} category`, detail: `Part of the ${category} space — ${ci > 60 ? "significant" : "moderate"} audience size.`, impact: 55 },
+                        { title: "News cycle active", detail: firstHeadline ? `Appearing in recent headlines: "${firstHeadline}"` : "Topic has ongoing media presence.", impact: 50 },
+                    ],
+                    cons: [
+                        { title: "AI analysis limited", detail: "Full multi-model analysis unavailable — fallback metrics in use.", impact: 40 },
+                        { title: `${volatilityFallback > 20 ? "High" : "Moderate"} volatility`, detail: `Interest fluctuates ${volatilityFallback.toFixed(1)}% day-to-day, making timing ${volatilityFallback > 20 ? "risky" : "somewhat unpredictable"}.`, impact: Math.round(volatilityFallback) },
+                        { title: "Timing uncertainty", detail: `Optimal action window cannot be precisely determined without full pipeline data.`, impact: 45 },
+                    ],
+                    timeHorizon: "1-2 weeks",
+                    actionItems: [
+                        `Search "${keyword}" on ${platformPrimary} to gauge real-time sentiment`,
+                        `Set a Google Alert for "${keyword}" to track developments`,
+                        `Check back in 48 hours for updated analysis with fresh data`,
+                    ],
+                    riskLevel: ci > 60 ? "Medium" : "High",
+                    opportunityWindow: "1-2 weeks",
+                    _fallback: true,
+                };
+            })();
+
         const step2End = Date.now();
+        const step3End = step2End; // They ran in parallel
 
         // ============================================================
-        // STEP 3: Verdict (needs advanced inferences)
-        // Featherless pros/cons/decision
+        // Inject fallback relatedQueries from validation suggestedKeywords
+        // (Google Trends often captchas, leaving relatedQueries empty)
         // ============================================================
-        const verdict = await callInternalAPI(
-            baseUrl,
-            "/api/pipeline/verdict",
-            { keyword, userRole, advancedInferences, basicMetrics }
-        );
-        const step3End = Date.now();
+        const bm = basicMetrics as Record<string, unknown>;
+        const rq = bm.relatedQueries as { top?: unknown[]; rising?: unknown[] } | undefined;
+        if ((!rq?.top?.length && !rq?.rising?.length) && validation.suggestedKeywords) {
+            const suggested = (validation.suggestedKeywords as string[]).map((kw: string, i: number) => ({
+                query: kw,
+                value: Math.max(10, 85 - i * 12),
+            }));
+            (bm as Record<string, unknown>).relatedQueries = {
+                top: suggested,
+                rising: suggested.slice(0, 3),
+            };
+        }
+
+        // Final fallback: ensure relatedQueries always has at least 5 entries
+        const rqAfter = bm.relatedQueries as { top?: unknown[]; rising?: unknown[] } | undefined;
+        if ((!rqAfter?.top?.length || (rqAfter.top.length < 5)) && (!rqAfter?.rising?.length)) {
+            const category = (validation.category as string) || "trending";
+            const generated = [
+                { query: `${keyword} trends`, value: 75 },
+                { query: `${keyword} news`, value: 68 },
+                { query: `${category} analysis`, value: 60 },
+                { query: `${keyword} 2026`, value: 55 },
+                { query: `${category} trends`, value: 50 },
+            ];
+            const existing = (rqAfter?.top as Array<{ query: string; value: number }>) || [];
+            const existingQueries = new Set(existing.map(e => e.query.toLowerCase()));
+            const toAdd = generated.filter(g => !existingQueries.has(g.query.toLowerCase()));
+            (bm as Record<string, unknown>).relatedQueries = {
+                top: [...existing, ...toAdd].slice(0, 8),
+                rising: rqAfter?.rising || toAdd.slice(0, 3),
+            };
+        }
 
         // ============================================================
         // Map to DecayAnalysis for frontend compatibility
@@ -344,9 +474,13 @@ export async function POST(req: NextRequest) {
         // ============================================================
         try {
             const rawChange = (basicMetrics.metrics as Record<string, number>)?.weekOverWeekChange || 0;
+            // Use currentInterest as the score when healthScore is very low
+            // healthScore = 100 - riskScore can be 0 for high-risk trends, but currentInterest is the actual Google Trends value
+            const currentInterest = (basicMetrics.metrics as Record<string, number>)?.currentInterest || 50;
+            const rawScore = Math.max(decayAnalysis.healthScore, Math.round(currentInterest * 0.5));
             await addOrUpdateTrend({
                 keyword,
-                score: Math.max(0, Math.min(100, decayAnalysis.healthScore)),
+                score: Math.max(5, Math.min(100, rawScore)),
                 change: Math.max(-100, Math.min(500, rawChange)),
                 volume: (basicMetrics._meta as Record<string, number>)?.dataPoints
                     ? Math.round(((basicMetrics.metrics as Record<string, number>)?.currentInterest || 50) * 1000)
@@ -367,6 +501,9 @@ export async function POST(req: NextRequest) {
             basicMetrics,
             advancedInferences,
             verdict,
+            newsHeadlines: newsResult.headlines.slice(0, 6),
+            newsArticles: newsResult.articles.slice(0, 6),
+            newsSentiment: newsResult.sentiment,
 
             // DecayAnalysis for existing frontend compatibility
             ...decayAnalysis,
@@ -377,8 +514,8 @@ export async function POST(req: NextRequest) {
                 providers: {
                     validation: "groq",
                     basicMetrics: "pytrends+groq",
-                    advancedInferences: "openrouter",
-                    verdict: "featherless",
+                    advancedInferences: advancedInferences?._meta?.provider || "gemini",
+                    verdict: verdict?._meta?.provider || "gemini",
                 },
                 completedAt: new Date().toISOString(),
                 timings: {

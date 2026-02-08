@@ -9,24 +9,26 @@ export type SectionId =
   | "Velocity"
   | "MetricsHistory"
   | "About"
+  | "News"
+  | "Sentiment"
   | "SimilarTrends";
 
 export const SECTION_ORDER: Record<string, SectionId[]> = {
   "content-creator": [
-    "Chart", "KeyMetrics", "ActionItems", "ProsCons", "Triade",
-    "Velocity", "MetricsHistory", "About", "SimilarTrends",
+    "Chart", "About", "News", "Sentiment", "KeyMetrics", "ActionItems", "ProsCons",
+    "Triade", "Velocity", "MetricsHistory", "SimilarTrends",
   ],
   "marketing-team": [
-    "ActionItems", "ProsCons", "Triade", "KeyMetrics", "Velocity",
-    "Chart", "MetricsHistory", "About", "SimilarTrends",
+    "Chart", "About", "News", "Sentiment", "ActionItems", "ProsCons", "Triade",
+    "KeyMetrics", "Velocity", "MetricsHistory", "SimilarTrends",
   ],
   "general-user": [
-    "Chart", "KeyMetrics", "About", "ProsCons", "SimilarTrends",
+    "Chart", "About", "News", "Sentiment", "KeyMetrics", "ProsCons", "SimilarTrends",
     "Triade", "Velocity", "MetricsHistory",
   ],
   "platform-moderator": [
-    "Triade", "Velocity", "KeyMetrics", "ProsCons", "ActionItems",
-    "Chart", "MetricsHistory", "About", "SimilarTrends",
+    "Chart", "About", "News", "Sentiment", "Triade", "Velocity", "KeyMetrics",
+    "ProsCons", "ActionItems", "MetricsHistory", "SimilarTrends",
   ],
 };
 

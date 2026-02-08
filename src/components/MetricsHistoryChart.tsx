@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { Info } from "lucide-react";
 
 interface MetricsHistoryEntry {
   date: string;
@@ -34,6 +35,7 @@ const ROLE_EMPHASIS: Record<string, string[]> = {
 export default function MetricsHistoryChart({ metricsHistory, userRole = "general-user" }: MetricsHistoryChartProps) {
   const [hiddenLines, setHiddenLines] = useState<Set<string>>(new Set());
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
+  const [showInfo, setShowInfo] = useState(false);
 
   const emphasized = ROLE_EMPHASIS[userRole] || ROLE_EMPHASIS["general-user"];
 
@@ -238,6 +240,59 @@ export default function MetricsHistoryChart({ metricsHistory, userRole = "genera
           </div>
         )}
       </div>
+
+      {/* Info toggle */}
+      <button
+        onClick={() => setShowInfo(!showInfo)}
+        className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white/70 transition-colors mt-3"
+      >
+        <Info className="w-3.5 h-3.5" />
+        <span>{showInfo ? "Hide" : "What do these metrics mean?"}</span>
+      </button>
+
+      {/* Collapsible explanation */}
+      <AnimatePresence>
+        {showInfo && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3 pt-3 border-t border-white/10">
+              <div className="flex items-start gap-2">
+                <div className="w-2 h-2 rounded-full mt-1.5 shrink-0" style={{ backgroundColor: "#a855f7" }} />
+                <div>
+                  <span className="text-xs font-medium text-white/80">Entropy</span>
+                  <p className="text-xs text-white/40">Measures semantic saturation — higher values mean the trend&apos;s meaning is becoming diluted across contexts.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <div className="w-2 h-2 rounded-full mt-1.5 shrink-0" style={{ backgroundColor: "#f87171" }} />
+                <div>
+                  <span className="text-xs font-medium text-white/80">Modularity</span>
+                  <p className="text-xs text-white/40">Community structure — higher values indicate more cohesive, distinct subgroups forming around the trend.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <div className="w-2 h-2 rounded-full mt-1.5 shrink-0" style={{ backgroundColor: "#4ade80" }} />
+                <div>
+                  <span className="text-xs font-medium text-white/80">Clustering</span>
+                  <p className="text-xs text-white/40">Network clustering coefficient — measures how interconnected communities are around this trend.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <div className="w-2 h-2 rounded-full mt-1.5 shrink-0" style={{ backgroundColor: "#00f0ff" }} />
+                <div>
+                  <span className="text-xs font-medium text-white/80">Volume</span>
+                  <p className="text-xs text-white/40">Search interest volume over time — the raw signal of public attention and engagement.</p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
