@@ -112,18 +112,6 @@ async function fetchRelatedQueries(keyword: string) {
     }
 }
 
-async function fetchRelatedTopics(keyword: string) {
-    try {
-        const data = await googleTrends.relatedTopics({ keyword });
-        const parsed = JSON.parse(data);
-        const top = parsed.default?.rankedList?.[0]?.rankedKeyword || [];
-        const rising = parsed.default?.rankedList?.[1]?.rankedKeyword || [];
-        return { top: top.slice(0, 10), rising: rising.slice(0, 10) };
-    } catch (e) {
-        console.error("relatedTopics error:", e instanceof Error ? e.message : String(e));
-        return { top: [], rising: [] };
-    }
-}
 
 function computeMetrics(timeline: TimelinePoint[]) {
     if (!timeline.length) {
