@@ -1,0 +1,346 @@
+"use client";
+
+import { useState, useRef, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import TrendDashboard from "@/components/TrendDashboard";
+import { RoleProvider } from "@/components/RoleSelector";
+import AppFlow, { useUserData } from "@/components/AppFlow";
+import TrendTicker from "@/components/TrendTicker";
+import TrendingStocks from "@/components/TrendingStocks";
+import AnalysisProgress, { AnalysisStep } from "@/components/AnalysisProgress";
+import { Activity } from "lucide-react";
+import SearchWithSuggestions from "@/components/SearchWithSuggestions";
+import TrendComparison from "@/components/TrendComparison";
+import DecayLeaderboard from "@/components/DecayLeaderboard";
+import CampaignTrendSuggester from "@/components/CampaignTrendSuggester";
+
+import PrismLogo from "@/components/PrismLogo";
+import { GitCompare, Target } from "lucide-react";
+
+
+// Role mapping from quiz IDs to API role keys
+const ROLE_MAP: Record<string, string> = {
+  creator: "content-creator",
+  marketer: "marketing-team",
+  analyst: "general-user",
+  executive: "platform-moderator",
+};
+
+function Dashboard() {
+  const [loading, setLoading] = useState(false);
+  const [query, setQuery] = useState("");
+  const [searchingKeyword, setSearchingKeyword] = useState("");
+  const [data, setData] = useState<Record<string, unknown> | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const { userData, goToLanding } = useUserData();
+
+  // Progress tracking
+  const [currentStep, setCurrentStep] = useState<AnalysisStep | null>(null);
+  const [completedSteps, setCompletedSteps] = useState<AnalysisStep[]>([]);
+  const [showComparison, setShowComparison] = useState(false);
+  const [showCampaignFinder, setShowCampaignFinder] = useState(false);
+
+  const dashboardRef = useRef<HTMLDivElement>(null);
+  const searchCache = useRef<Map<string, { data: Record<string, unknown>; timestamp: number }>>(new Map());
+  const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+  const quizRole = (userData?.role as string) || "analyst";
+  const userRole = ROLE_MAP[quizRole] || "general-user";
+  const userName = (userData?.name as string) || "User";
+  const platforms = (userData?.platforms as string[]) || [];
+
+  // Scroll to top when dashboard data loads
+  useEffect(() => {
+    if (data) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [data]);
+
+  const simulateProgress = () => {
+    // Simulate pipeline progress matching actual timing:
+    // validate (~0.5s) → metrics (~2s) → inferences+verdict parallel (~5-12s)
+    const timers: ReturnType<typeof setTimeout>[] = [];
+
+    setCurrentStep("validate");
+    setCompletedSteps([]);
+
+    // Step 1: validate completes fast
+    timers.push(setTimeout(() => {
+      setCompletedSteps(["validate"]);
+      setCurrentStep("metrics");
+    }, 800));
+
+    // Step 2: metrics takes ~2-3s
+    timers.push(setTimeout(() => {
+      setCompletedSteps(["validate", "metrics"]);
+      setCurrentStep("inferences");
+    }, 3500));
+
+    // Step 3: inferences + verdict run in parallel, show inferences first
+    timers.push(setTimeout(() => {
+      setCompletedSteps(["validate", "metrics", "inferences"]);
+      setCurrentStep("verdict");
+    }, 8000));
+
+    return () => timers.forEach(t => clearTimeout(t));
+  };
+
+  const analyzeKeyword = useCallback(async (keyword: string) => {
+    if (!keyword) return;
+
+    const cacheKey = keyword.toLowerCase().trim();
+
+    // Check cache first
+    const cached = searchCache.current.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      setData(null);
+      setValidationError(null);
+      setSearchingKeyword(keyword);
+      setQuery(keyword);
+      setCompletedSteps(["validate", "metrics", "inferences", "verdict"]);
+      setCurrentStep(null);
+      setData(cached.data);
+      setLoading(false);
+      return;
+    }
+
+    // Reset state
+    setData(null);
+    setValidationError(null);
+    setLoading(true);
+    setSearchingKeyword(keyword);
+    setQuery(keyword);
+
+    // Start progress simulation
+    const cleanup = simulateProgress();
+
+    try {
+      const res = await fetch("/api/trends/decay", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ keyword, userRole, platforms }),
+      });
+
+      const result = await res.json();
+
+      // Complete all steps
+      setCompletedSteps(["validate", "metrics", "inferences", "verdict"]);
+      setCurrentStep(null);
+
+      if (res.status === 422) {
+        setValidationError(result.validation?.reason || result.message || "This doesn't appear to be a valid trend.");
+        setLoading(false);
+        cleanup();
+        return;
+      }
+
+      // Cache the result
+      searchCache.current.set(cacheKey, { data: result, timestamp: Date.now() });
+
+      // Small delay for visual completion
+      setTimeout(() => {
+        setData(result);
+        setLoading(false);
+      }, 500);
+
+      cleanup();
+    } catch (error) {
+      console.error("Failed to analyze trend", error);
+      setValidationError("Analysis failed. Please try again.");
+      setLoading(false);
+      cleanup();
+    }
+  }, [userRole, platforms]);
+
+  const handleStockClick = (keyword: string) => {
+    analyzeKeyword(keyword);
+  };
+
+  const handleBackToStocks = () => {
+    setData(null);
+    setSearchingKeyword("");
+    setCompletedSteps([]);
+    setCurrentStep(null);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.8 }}
+      className="min-h-screen relative font-sans bg-black"
+    >
+      {/* Grain Overlay */}
+      <div className="grain-overlay fixed inset-0 pointer-events-none z-50" />
+
+      {/* Main HUD Container */}
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.2, duration: 0.6 }}
+        // Style updated with UNIFORM edge lighting (whole perimeter) - outer glow enabled
+        style={{
+          // Gradient Border trick: transparent border with background-clip
+          background: "linear-gradient(rgba(10, 10, 10, 0.95), rgba(10, 10, 10, 0.95)) padding-box, linear-gradient(135deg, #00f2ea 0%, #ff0099 100%) border-box",
+          border: "2px solid transparent",
+          // Strong Colored glow matching the gradient
+          boxShadow: "0 0 50px rgba(0, 242, 234, 0.2), inset 0 0 30px rgba(255, 0, 153, 0.15)",
+          borderRadius: "40px", // Explicitly set border radius in style to override CSS
+        }}
+        className="relative z-10 w-[95vw] max-w-7xl mx-auto my-6 min-h-[calc(100vh-3rem)] rounded-[40px]"
+      >
+        {/* Illuminated Edge Gradient Overlay */}
+        <div
+          className="absolute inset-0 pointer-events-none rounded-[40px] z-50"
+          style={{
+            padding: "1px",
+            background: "linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.4) 100%)",
+            mask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+            maskComposite: "exclude",
+            WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+            WebkitMaskComposite: "xor",
+            opacity: 0.8, // Make it visible
+          }}
+        />
+
+
+        {/* Header Bar */}
+        <header className="flex justify-between items-center px-8 py-4 border-b border-white/10">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={goToLanding}
+              className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer"
+            >
+              <PrismLogo className="w-8 h-8" />
+              <h1 className="text-xl font-bold tracking-tight">
+                <span className="text-white">TREND</span>
+                <span className="text-white/50 ml-1">PRISM</span>
+              </h1>
+            </button>
+            {data && (
+              <button
+                onClick={handleBackToStocks}
+                className="ml-4 text-xs text-white/50 hover:text-white transition-colors"
+              >
+                ← Back to Trends
+              </button>
+            )}
+          </div>
+          <div className="flex items-center gap-6 text-xs font-mono text-white/50">
+            <span className="text-white/70 font-bold tracking-wider uppercase">Team Phantom Thieves</span>
+            <button
+              onClick={() => setShowComparison(true)}
+              className="flex items-center gap-1.5 px-3 py-1 rounded-lg border border-white/20 text-white/70 hover:bg-white/10 hover:border-white/40 transition-all"
+            >
+              <GitCompare className="w-3 h-3" />
+              <span>Compare</span>
+            </button>
+            <button
+              onClick={() => setShowCampaignFinder(true)}
+              className="flex items-center gap-1.5 px-3 py-1 rounded-lg border border-white/20 text-white/70 hover:bg-white/10 hover:border-white/40 transition-all"
+            >
+              <Target className="w-3 h-3" />
+              <span>Campaign</span>
+            </button>
+          </div>
+        </header>
+
+        {/* Search Bar with Suggestions */}
+        <div className="px-8 py-6">
+          <SearchWithSuggestions
+            value={query}
+            onChange={(value) => {
+              setQuery(value);
+              if (validationError) setValidationError(null);
+            }}
+            onSearch={analyzeKeyword}
+            loading={loading}
+            validationError={validationError}
+          />
+        </div>
+
+        {/* Ticker Tape */}
+        <TrendTicker />
+
+        {/* Dashboard Content */}
+        <div className="px-8 py-6">
+          <AnimatePresence mode="wait">
+            {loading && searchingKeyword ? (
+              <motion.div
+                key="loading"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="py-12"
+              >
+                <AnalysisProgress
+                  currentStep={currentStep}
+                  completedSteps={completedSteps}
+                  keyword={searchingKeyword}
+                />
+              </motion.div>
+            ) : data ? (
+              <motion.div
+                ref={dashboardRef}
+                key="report"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+              >
+                <TrendDashboard data={data as { keyword: string } & Record<string, unknown>} userRole={userRole} onRelatedTrendClick={handleStockClick} />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="stocks"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+              >
+                <div className="lg:col-span-2">
+                  <TrendingStocks onStockClick={handleStockClick} />
+                </div>
+                <div>
+                  <DecayLeaderboard onTrendClick={handleStockClick} />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </motion.div>
+
+      {/* Comparison Modal */}
+      <AnimatePresence>
+        {showComparison && (
+          <TrendComparison
+            onClose={() => setShowComparison(false)}
+            userRole={userRole}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Campaign Trend Finder Modal */}
+      <AnimatePresence>
+        {showCampaignFinder && (
+          <CampaignTrendSuggester
+            onClose={() => setShowCampaignFinder(false)}
+            onTrendSelect={(trend) => {
+              setShowCampaignFinder(false);
+              analyzeKeyword(trend);
+            }}
+          />
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
+export default function Home() {
+  return (
+    <RoleProvider>
+      <AppFlow>
+        <Dashboard />
+      </AppFlow>
+    </RoleProvider>
+  );
+}
